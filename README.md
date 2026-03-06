@@ -32,4 +32,4 @@ Projenin veritabanı Docker üzerinde çalışmaktadır. CMD veya Terminal'i aç
 * **Berkay:** Sensör ve Veri Kaynakları Entegrasyonu
 * **Lalise:** Teknoloji Araştırması ve Analiz Araçları
 * **Halenaz:** Sistem Gereksinimleri ve Dokümantasyon
-* **[5. Arkadaşın Adı]:** Kullanıcı Yetkilendirme (Security) ve Bildirim Servisi
+* **Utku Efe:** Kullanıcı Yetkilendirme (Security) ve Bildirim Servisi
