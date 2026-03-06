@@ -8,7 +8,7 @@ import java.time.Instant;
 
 public class VeriServisi {
     // ELİNDEKİ O UZUN TOKEN'I BURAYA YAPIŞTIR
-    private static final String token = "3mNco8zhj6oSR3E001A19kFupMVJtBotEgzaalzfyix8Je39gx2V3HuPeSu34GI9fke_FT-nrhqRa714XT63FA==";
+    private static final String token = "BURAYA_KENDI_TOKENINIZI_YAZIN";
 
     private static final String bucket = "enerji_verileri";
     private static final String org = "akillienerji";
