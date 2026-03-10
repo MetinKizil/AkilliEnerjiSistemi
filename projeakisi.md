@@ -56,7 +56,9 @@ Geliştirilecek sistemin temel hedefleri:
 * Enerji kullanımındaki anormallikleri tespit etmek
 
 # 3. IoT Veri Toplama Teknolojileri
-Akıllı enerji yönetim sisteminde sensörler enerji tüketimi, sıcaklık ve cihaz kullanım verilerini toplar ve merkezi sisteme iletir.
+Akıllı enerji yönetim sisteminde sensörler enerji tüketimi, sıcaklık ve cihaz kullanım verilerini toplar ve merkezi sisteme iletir.[Akıllı Enerji yönetim sistemleri.pdf](https://github.com/user-attachments/files/25883786/Akilli.Enerji.yonetim.sistemleri.pdf)
+[Akıllı Enerji yönetim sistemleri.pdf](https://github.com/user-attachments/files/25883786/Akilli.Enerji.yonetim.sistemleri.pdf)
+
 
 ### MQTT Protokolü
 IoT sistemlerinde yaygın olarak kullanılan hafif bir mesajlaşma protokolüdür.
