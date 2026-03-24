@@ -276,5 +276,46 @@ Tanımlanan kaynaklar, toplama yöntemleri ve karmaşık entegrasyon süreçleri
     Spring Boot yöneticinin müdahalesini beklemeden MQTT üzerinden ilgili sayaca doğru geri bir mesaj gönderir: "Röleyi Kapat". Sayaç bu mesajı alır, elektriği keser ve döngü güvenli
     bir şekilde tamamlanır.
 
+---
+
+## 📊  Sistem Analizi ve Görselleştirme
+
+### 1. Use Case (Kullanım Durumu) Diyagramı
+[cite_start]Sistemdeki aktörlerin (Kullanıcı ve Admin) fonksiyonel yetkilerini tanımlar[cite: 5]:
+* [cite_start]**Kullanıcı:** Giriş yapar, anlık veri izler, geçmiş analizleri görür ve bildirim alır[cite: 1, 2, 3, 4, 8].
+* [cite_start]**Admin:** Kullanıcı girişine ek olarak sistemin alarm üreteceği "Eşik Değeri Ayarlama" yetkisine sahiptir[cite: 6, 7].
+
+### 2. Sistem Akış Diyagramı (Flowchart)
+[cite_start]Sistemin mantıksal çalışma döngüsü şu şekildedir[cite: 9, 16]:
+* [cite_start]**Başlangıç:** Kullanıcı sisteme giriş yapar ve InfluxDB üzerinden sensör verileri okunur[cite: 10, 11].
+* [cite_start]**Karar Mekanizması:** Eğer tüketim belirlenen eşik değerinden büyükse (`Evet`), sistem otomatik olarak alarm bildirimi üretir[cite: 13, 14, 15].
+* [cite_start]**Döngü:** Tüketim eşik değerinin altındaysa (`Hayır`), sistem veri okumaya devam eder[cite: 12].
+
+> **Not:** Diyagramların detaylı hali repoda yer alan `Use Case ve Akış Diyagramı drawio.pdf` dosyasında mevcuttur.
+
+---
+
+---
+
+## 📊 3. Hafta: Sistem Analizi ve Görselleştirme
+
+Sistemin işleyişini ve kullanıcı etkileşimlerini görselleştirmek adına **Use Case** ve **Akış Diyagramları** hazırlanmıştır.
+
+### 1. Use Case (Kullanım Durumu) Diyagramı
+
+[cite_start]Sistemdeki aktörlerin (Kullanıcı ve Admin) fonksiyonel yetkilerini tanımlar[cite: 5]:
+* [cite_start]**Kullanıcı:** Giriş yapar, anlık veri izler, geçmiş analizleri görür ve bildirim alır[cite: 1, 2, 3, 4, 8].
+* [cite_start]**Admin:** Kullanıcı girişine ek olarak sistemin alarm üreteceği "Eşik Değeri Ayarlama" yetkisine sahiptir[cite: 6, 7].
+
+### 2. Sistem Akış Diyagramı (Flowchart)
+[cite_start]Sistemin mantıksal çalışma döngüsü şu şekildedir[cite: 9, 16]:
+* [cite_start]**Başlangıç:** Kullanıcı sisteme giriş yapar ve InfluxDB üzerinden sensör verileri okunur[cite: 10, 11].
+* [cite_start]**Karar Mekanizması:** Eğer tüketim belirlenen eşik değerinden büyükse (`Evet`), sistem otomatik olarak alarm bildirimi üretir[cite: 13, 14, 15].
+* [cite_start]**Döngü:** Tüketim eşik değerinin altındaysa (`Hayır`), sistem veri okumaya devam eder[cite: 12].
+
+<img width="277" height="861" alt="Use Case Diyagramı-Sayfa-2 drawio" src="https://github.com/user-attachments/assets/e991ad56-89de-4b4e-8750-714b336538dc" />
+
+<img width="741" height="992" alt="Use Case Diyagramı-Sayfa-1 drawio" src="https://github.com/user-attachments/assets/74889a4e-e9f8-4169-b12c-1c29a0b7d455" />
+
 
     
