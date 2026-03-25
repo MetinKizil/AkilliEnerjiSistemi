@@ -318,4 +318,15 @@ Sistemin işleyişini ve kullanıcı etkileşimlerini görselleştirmek adına *
 <img width="741" height="992" alt="Use Case Diyagramı-Sayfa-1 drawio" src="https://github.com/user-attachments/assets/74889a4e-e9f8-4169-b12c-1c29a0b7d455" />
 
 
-    
+# 📊 3. HAFTA: İNTERAKTİF ARAYÜZ TASARIMI VE DASHBOARD PROTOTİPİ
+
+**NOT:** Projemizin kullanıcı deneyimini (UX) en gerçekçi şekilde test etmek amacıyla, statik çizimler yerine **React**, **Tailwind CSS** ve **Lucide-React** kütüphaneleri kullanılarak işlevsel bir ön uç (frontend) prototipi geliştirilmiştir. 
+
+<img width="1918" height="1078" alt="AkilliEnerjiSistemi2" src="https://github.com/user-attachments/assets/2e3fcb50-fc39-4c6b-b92a-a54cd29f58da" />
+
+
+### **Teknik Detaylar ve Özellikler:**
+
+* **KPI Kartları:** Anlık enerji tüketimi, üretim ve batarya durumu **InfluxDB**'den gelecek verilere göre dinamik olarak güncellenecek şekilde kurgulanmıştır.
+* **Cihaz Yönetimi:** Bağlı cihazların (Klima, Aydınlatma vb.) durumunu kontrol eden interaktif **"Toggle"** butonları eklenmiştir.
+* **Alarm Modülü:** Kritik eşik değerleri aşıldığında kullanıcıya anlık bildirim verecek olan **Uyarı Sistemi** görselleştirilmiştir.
