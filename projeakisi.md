@@ -291,11 +291,12 @@ Tanımlanan kaynaklar, toplama yöntemleri ve karmaşık entegrasyon süreçleri
 * [cite_start]**Karar Mekanizması:** Eğer tüketim belirlenen eşik değerinden büyükse (`Evet`), sistem otomatik olarak alarm bildirimi üretir[cite: 13, 14, 15].
 * [cite_start]**Döngü:** Tüketim eşik değerinin altındaysa (`Hayır`), sistem veri okumaya devam eder[cite: 12].
 
-> **Not:** Diyagramların detaylı hali repoda yer alan `Use Case ve Akış Diyagramı drawio.pdf` dosyasında mevcuttur.
+> **Not:** Diyagramların detaylı hali repoda yer alan `Use Case ve Akış Diyagramı drawio.pdf` dosyasında mevcuttu
 
----
+Sistemin Mimari tasarimi
 
----
+[Sistem Mimari Tasarımı.docx](https://github.com/user-attachments/files/26325936/Sistem.Mimari.Tasarimi.docx)
+
 
 ## 📊 3. Hafta: Sistem Analizi ve Görselleştirme
 
