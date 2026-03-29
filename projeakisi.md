@@ -331,3 +331,38 @@ Sistemin işleyişini ve kullanıcı etkileşimlerini görselleştirmek adına *
 * **KPI Kartları:** Anlık enerji tüketimi, üretim ve batarya durumu **InfluxDB**'den gelecek verilere göre dinamik olarak güncellenecek şekilde kurgulanmıştır.
 * **Cihaz Yönetimi:** Bağlı cihazların (Klima, Aydınlatma vb.) durumunu kontrol eden interaktif **"Toggle"** butonları eklenmiştir.
 * **Alarm Modülü:** Kritik eşik değerleri aşıldığında kullanıcıya anlık bildirim verecek olan **Uyarı Sistemi** görselleştirilmiştir.
+🚀 Akıllı Enerji Sistemi - Gelecekteki Performans Testleri Planı
+1. Testin Amacı ve Kapsamı
+Akıllı Enerji Sistemi, doğası gereği binlerce IoT sensöründen aynı anda anlık veri (tüketim miktarı) alacak şekilde tasarlanmıştır. Bu planın amacı, anlık yüksek veri akışı durumunda sistemin (özellikle EnergyController, AlertService ve NotificationService bileşenlerinin) çökmeden, hızlı ve hatasız çalışmasını garanti altına almaktır.
+
+Ana Hedef Uç Nokta (Endpoint): POST /api/energy/check
+
+2. Kullanılacak Test Araçları ve Altyapı
+
+Test Aracı: Python tabanlı Locust aracı kullanılacaktır. Dağıtık mimariyi desteklemesi ve kod üzerinden senaryo yazılabilmesi (locustfile.py) sebebiyle tercih edilmiştir.
+
+İzleme (Monitoring): Testler sırasında Spring Boot sunucusunun CPU ve RAM kullanımları izlenecektir.
+
+3. Planlanan Performans Testi Türleri
+Gelecekteki güncellemelerde sistem aşağıdaki 3 farklı senaryoya göre test edilecektir:
+
+Yük Testi (Load Testing): Sisteme beklenen normal trafik (Örn: Aynı anda veri gönderen 1.000 cihaz) verilerek, darboğaz olup olmadığı gözlemlenecektir.
+
+Stres Testi (Stress Testing): Sistemin sınırlarını bulmak için kapasite yavaş yavaş artırılacak (Örn: 5.000 - 10.000 cihaz) ve sistemin hangi noktada pes ettiği (çöktüğü veya hata verdiği) tespit edilecektir.
+
+Dayanıklılık Testi (Endurance Testing): Hafıza sızıntılarını (Memory Leak) tespit etmek için sistem, orta düzeyli bir yük altında (Örn: 500 cihaz) kesintisiz olarak 12-24 saat boyunca çalıştırılacaktır.
+
+4. Başarı Kriterleri (Hedeflenen Metrikler)
+Yapılacak testlerin başarılı sayılabilmesi için sistemin şu metrikleri sağlaması hedeflenmektedir:
+
+Yanıt Süresi (Response Time): Gelen check isteklerinin %95'inin 500 milisaniyenin altında işlenmesi.
+
+Hata Oranı (Failure Rate): Aşırı yük altında bile yetkilendirme (Token) hatası haricindeki sistem hatalarının %1'in altında kalması.
+
+Saniyedeki İstek (RPS): Sistemin saniyede en az 250+ isteği (Request per Second) sorunsuz işleyebilmesi.
+
+5. Gelecek Aksiyon Adımları (Next Steps)
+
+Güvenlik (Security) Entegrasyonu: İlk denemelerde fark edildiği üzere, Spring Security (SecurityConfig.java) dışarıdan gelen istekleri engellemektedir (401/403 Hataları). Gelecekteki test scriptlerine, sanal cihazların sisteme giriş yapabilmesi için dinamik bir "Bearer Token/JWT" üretme mekanizması eklenecektir.
+
+CI/CD Entegrasyonu: Locust testleri GitHub Actions veya Jenkins gibi süreçlere dahil edilecek; sisteme her yeni kod eklendiğinde performans testi otomatik olarak çalıştırılacaktır.
