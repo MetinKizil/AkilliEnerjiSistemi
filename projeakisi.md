@@ -434,9 +434,9 @@ CI/CD Entegrasyonu: Locust testleri GitHub Actions veya Jenkins gibi süreçlere
 ## Çalıştırma
 
 * powershell
-$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot"
-$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-.\mvnw.cmd spring-boot:run
+  $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot"
+  $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+  .\mvnw.cmd spring-boot:run
 
 * Tarayıcıda: http://localhost:8080/login.html
 
