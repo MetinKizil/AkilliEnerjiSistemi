@@ -366,3 +366,79 @@ Saniyedeki İstek (RPS): Sistemin saniyede en az 250+ isteği (Request per Secon
 Güvenlik (Security) Entegrasyonu: İlk denemelerde fark edildiği üzere, Spring Security (SecurityConfig.java) dışarıdan gelen istekleri engellemektedir (401/403 Hataları). Gelecekteki test scriptlerine, sanal cihazların sisteme giriş yapabilmesi için dinamik bir "Bearer Token/JWT" üretme mekanizması eklenecektir.
 
 CI/CD Entegrasyonu: Locust testleri GitHub Actions veya Jenkins gibi süreçlere dahil edilecek; sisteme her yeni kod eklendiğinde performans testi otomatik olarak çalıştırılacaktır.
+
+
+
+# API Tasarımı
+
+## Backend - RESTful API'lar
+4 yeni Controller oluşturuldu, toplam 12 REST endpoint tanımlandı:
+
+| # | Metod                         | URL                                 | İşlev                                     |
+|---|-------------------------------|-------------------------------------|-------------------------------------------|
+| 1 | POST                          | /api/auth/login                     | Kullanıcı giriş doğrulama                 |
+| 2 | GET                           | /api/auth/me                        | Oturum bilgisi sorgulama                  |
+| 3 | GET                           | /api/dashboard/summary              | KPI kartları verisi                       |
+| 4 | GET                           | /api/dashboard/realtime             | Anlık enerji verisi                       |
+| 5 | GET                           | /api/dashboard/history              | Geçmiş enerji grafik verisi               |
+| 6 | GET                           | /api/devices                        | Tüm cihazları listele                     |
+| 7 | GET                           | /api/devices/{id}                   | Tek cihaz bilgisi                         |
+| 8 | POST                          | /api/devices/{id}/toggle            | Cihaz aç/kapa                             |
+| 9 | PUT                           | /api/devices/{id}                   | Cihaz güncelle                            |
+|10 | GET                           | /api/alerts                         | Uyarıları listele                         |
+|11 | POST                          | /api/alerts/{id}/acknowledge        | Uyarıyı onayla                            |
+|12 | PUT                           | /api/alerts/threshold               | Eşik değeri güncelle                      |
+
+
+
+## Frontend - Tüm Butonlar ve İşlevleri
+
+| # | Buton                         | Ne Yapar                                                            |
+|---|-------------------------------|---------------------------------------------------------------------|
+| 1 | Giriş Yap                     | Kullanıcı adı/şifre ile /api/auth/login çağrısı                     |
+| 2 | Admin/Kullanıcı chip          | Demo hesap bilgilerini otomatik doldurma                            |
+| 3 | Şifre göster/gizle            | Password alanını text/password arasında değiştirir                  |
+| 4 | Çıkış                         | Session temizleme + login sayfasına yönlendirme                     |
+| 5 | Cihaz Toggle (8 adet)         | Her cihazın yanındaki toggle ile aç/kapa                            |
+| 6 | Uyarı Onayla                  | Alarmı kapatır (acknowledged)                                       |
+| 7 | Eşik Değeri Kaydet            | Admin: max/uyarı/kritik değerleri günceller                         |
+| 8 | 6/12/24/48 Saat               | Grafik zaman aralığını değiştirir                                   |
+| 9 | Grafik Yenile                 | Enerji grafiğini yeniden yükler                                     |
+|10 | Verileri Yenile               | Tüm dashboard verilerini günceller                                  |
+|11 | CSV İndir                     | Enerji geçmişini CSV dosyası olarak indirir                         |
+|12 | Enerji Kontrol                | Anlık tüketimi eşik değeriyle karşılaştırır                         |
+
+
+
+## Test Sonuçları 
+
+* ✅ Maven derleme: BUILD SUCCESS (17 kaynak dosya)
+* ✅ Spring Boot başlatma: Port 8080'de çalışıyor
+* ✅ Login sayfası: Admin ve Kullanıcı hesaplarıyla giriş yapıldı
+* ✅ Dashboard: KPI kartları, grafik, cihaz listesi, uyarılar gösterildi
+* ✅ Cihaz toggle'ları çalışıyor (aç/kapa)
+* ✅ Uyarı onayla butonu çalışıyor
+* ✅ Eşik değeri ayarları görünüyor (Admin hesabıyla)
+
+
+
+## Kullanıcı Hesapları
+
+| Kullanıcı                         | Şifre                            | Rol                               |
+|-----------------------------------|----------------------------------|-----------------------------------|
+| admin                             | admin123                         | ADMIN + USER                      |
+| kullanici                         | sifre123                         | USER                              |
+
+
+
+## Çalıştırma
+
+* powershell
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+.\mvnw.cmd spring-boot:run
+
+* Tarayıcıda: http://localhost:8080/login.html
+
+
+
