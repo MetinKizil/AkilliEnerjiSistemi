@@ -291,11 +291,12 @@ Tanımlanan kaynaklar, toplama yöntemleri ve karmaşık entegrasyon süreçleri
 * [cite_start]**Karar Mekanizması:** Eğer tüketim belirlenen eşik değerinden büyükse (`Evet`), sistem otomatik olarak alarm bildirimi üretir[cite: 13, 14, 15].
 * [cite_start]**Döngü:** Tüketim eşik değerinin altındaysa (`Hayır`), sistem veri okumaya devam eder[cite: 12].
 
-> **Not:** Diyagramların detaylı hali repoda yer alan `Use Case ve Akış Diyagramı drawio.pdf` dosyasında mevcuttur.
+> **Not:** Diyagramların detaylı hali repoda yer alan `Use Case ve Akış Diyagramı drawio.pdf` dosyasında mevcuttu
 
----
+Sistemin Mimari tasarimi
 
----
+[Sistem Mimari Tasarımı.docx](https://github.com/user-attachments/files/26325936/Sistem.Mimari.Tasarimi.docx)
+
 
 ## 📊 3. Hafta: Sistem Analizi ve Görselleştirme
 
@@ -330,3 +331,114 @@ Sistemin işleyişini ve kullanıcı etkileşimlerini görselleştirmek adına *
 * **KPI Kartları:** Anlık enerji tüketimi, üretim ve batarya durumu **InfluxDB**'den gelecek verilere göre dinamik olarak güncellenecek şekilde kurgulanmıştır.
 * **Cihaz Yönetimi:** Bağlı cihazların (Klima, Aydınlatma vb.) durumunu kontrol eden interaktif **"Toggle"** butonları eklenmiştir.
 * **Alarm Modülü:** Kritik eşik değerleri aşıldığında kullanıcıya anlık bildirim verecek olan **Uyarı Sistemi** görselleştirilmiştir.
+🚀 Akıllı Enerji Sistemi - Gelecekteki Performans Testleri Planı
+1. Testin Amacı ve Kapsamı
+Akıllı Enerji Sistemi, doğası gereği binlerce IoT sensöründen aynı anda anlık veri (tüketim miktarı) alacak şekilde tasarlanmıştır. Bu planın amacı, anlık yüksek veri akışı durumunda sistemin (özellikle EnergyController, AlertService ve NotificationService bileşenlerinin) çökmeden, hızlı ve hatasız çalışmasını garanti altına almaktır.
+
+Ana Hedef Uç Nokta (Endpoint): POST /api/energy/check
+
+2. Kullanılacak Test Araçları ve Altyapı
+
+Test Aracı: Python tabanlı Locust aracı kullanılacaktır. Dağıtık mimariyi desteklemesi ve kod üzerinden senaryo yazılabilmesi (locustfile.py) sebebiyle tercih edilmiştir.
+
+İzleme (Monitoring): Testler sırasında Spring Boot sunucusunun CPU ve RAM kullanımları izlenecektir.
+
+3. Planlanan Performans Testi Türleri
+Gelecekteki güncellemelerde sistem aşağıdaki 3 farklı senaryoya göre test edilecektir:
+
+Yük Testi (Load Testing): Sisteme beklenen normal trafik (Örn: Aynı anda veri gönderen 1.000 cihaz) verilerek, darboğaz olup olmadığı gözlemlenecektir.
+
+Stres Testi (Stress Testing): Sistemin sınırlarını bulmak için kapasite yavaş yavaş artırılacak (Örn: 5.000 - 10.000 cihaz) ve sistemin hangi noktada pes ettiği (çöktüğü veya hata verdiği) tespit edilecektir.
+
+Dayanıklılık Testi (Endurance Testing): Hafıza sızıntılarını (Memory Leak) tespit etmek için sistem, orta düzeyli bir yük altında (Örn: 500 cihaz) kesintisiz olarak 12-24 saat boyunca çalıştırılacaktır.
+
+4. Başarı Kriterleri (Hedeflenen Metrikler)
+Yapılacak testlerin başarılı sayılabilmesi için sistemin şu metrikleri sağlaması hedeflenmektedir:
+
+Yanıt Süresi (Response Time): Gelen check isteklerinin %95'inin 500 milisaniyenin altında işlenmesi.
+
+Hata Oranı (Failure Rate): Aşırı yük altında bile yetkilendirme (Token) hatası haricindeki sistem hatalarının %1'in altında kalması.
+
+Saniyedeki İstek (RPS): Sistemin saniyede en az 250+ isteği (Request per Second) sorunsuz işleyebilmesi.
+
+5. Gelecek Aksiyon Adımları (Next Steps)
+
+Güvenlik (Security) Entegrasyonu: İlk denemelerde fark edildiği üzere, Spring Security (SecurityConfig.java) dışarıdan gelen istekleri engellemektedir (401/403 Hataları). Gelecekteki test scriptlerine, sanal cihazların sisteme giriş yapabilmesi için dinamik bir "Bearer Token/JWT" üretme mekanizması eklenecektir.
+
+CI/CD Entegrasyonu: Locust testleri GitHub Actions veya Jenkins gibi süreçlere dahil edilecek; sisteme her yeni kod eklendiğinde performans testi otomatik olarak çalıştırılacaktır.
+
+
+
+# API Tasarımı
+
+## Backend - RESTful API'lar
+4 yeni Controller oluşturuldu, toplam 12 REST endpoint tanımlandı:
+
+| # | Metod                         | URL                                 | İşlev                                     |
+|---|-------------------------------|-------------------------------------|-------------------------------------------|
+| 1 | POST                          | /api/auth/login                     | Kullanıcı giriş doğrulama                 |
+| 2 | GET                           | /api/auth/me                        | Oturum bilgisi sorgulama                  |
+| 3 | GET                           | /api/dashboard/summary              | KPI kartları verisi                       |
+| 4 | GET                           | /api/dashboard/realtime             | Anlık enerji verisi                       |
+| 5 | GET                           | /api/dashboard/history              | Geçmiş enerji grafik verisi               |
+| 6 | GET                           | /api/devices                        | Tüm cihazları listele                     |
+| 7 | GET                           | /api/devices/{id}                   | Tek cihaz bilgisi                         |
+| 8 | POST                          | /api/devices/{id}/toggle            | Cihaz aç/kapa                             |
+| 9 | PUT                           | /api/devices/{id}                   | Cihaz güncelle                            |
+|10 | GET                           | /api/alerts                         | Uyarıları listele                         |
+|11 | POST                          | /api/alerts/{id}/acknowledge        | Uyarıyı onayla                            |
+|12 | PUT                           | /api/alerts/threshold               | Eşik değeri güncelle                      |
+
+
+
+## Frontend - Tüm Butonlar ve İşlevleri
+
+| # | Buton                         | Ne Yapar                                                            |
+|---|-------------------------------|---------------------------------------------------------------------|
+| 1 | Giriş Yap                     | Kullanıcı adı/şifre ile /api/auth/login çağrısı                     |
+| 2 | Admin/Kullanıcı chip          | Demo hesap bilgilerini otomatik doldurma                            |
+| 3 | Şifre göster/gizle            | Password alanını text/password arasında değiştirir                  |
+| 4 | Çıkış                         | Session temizleme + login sayfasına yönlendirme                     |
+| 5 | Cihaz Toggle (8 adet)         | Her cihazın yanındaki toggle ile aç/kapa                            |
+| 6 | Uyarı Onayla                  | Alarmı kapatır (acknowledged)                                       |
+| 7 | Eşik Değeri Kaydet            | Admin: max/uyarı/kritik değerleri günceller                         |
+| 8 | 6/12/24/48 Saat               | Grafik zaman aralığını değiştirir                                   |
+| 9 | Grafik Yenile                 | Enerji grafiğini yeniden yükler                                     |
+|10 | Verileri Yenile               | Tüm dashboard verilerini günceller                                  |
+|11 | CSV İndir                     | Enerji geçmişini CSV dosyası olarak indirir                         |
+|12 | Enerji Kontrol                | Anlık tüketimi eşik değeriyle karşılaştırır                         |
+
+
+
+## Test Sonuçları 
+
+* ✅ Maven derleme: BUILD SUCCESS (17 kaynak dosya)
+* ✅ Spring Boot başlatma: Port 8080'de çalışıyor
+* ✅ Login sayfası: Admin ve Kullanıcı hesaplarıyla giriş yapıldı
+* ✅ Dashboard: KPI kartları, grafik, cihaz listesi, uyarılar gösterildi
+* ✅ Cihaz toggle'ları çalışıyor (aç/kapa)
+* ✅ Uyarı onayla butonu çalışıyor
+* ✅ Eşik değeri ayarları görünüyor (Admin hesabıyla)
+
+
+
+## Kullanıcı Hesapları
+
+| Kullanıcı                         | Şifre                            | Rol                               |
+|-----------------------------------|----------------------------------|-----------------------------------|
+| admin                             | admin123                         | ADMIN + USER                      |
+| kullanici                         | sifre123                         | USER                              |
+
+
+
+## Çalıştırma
+
+* powershell
+  $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot"
+  $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+  .\mvnw.cmd spring-boot:run
+
+* Tarayıcıda: http://localhost:8080/login.html
+
+
+
