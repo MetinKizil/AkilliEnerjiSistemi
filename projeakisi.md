@@ -442,3 +442,93 @@ CI/CD Entegrasyonu: Locust testleri GitHub Actions veya Jenkins gibi süreçlere
 
 
 
+
+
+
+
+# Spring Boot Proje Yapısı ve Bağımlılıklarının Belirlenmesi
+Bu doküman, projede gerçekleştirilen altyapı çalışmalarını, mimari kararları ve sisteme kazandırılan yeni özellikleri detaylandırmak amacıyla hazırlanmıştır. Projeyi bir prototipten alarak, genişletilebilir ve gerçek zamanlı bir IoT mimarisine dönüştüren tüm işlemler aşağıda raporlanmıştır.
+
+
+## 1. Yönetici Özeti (Executive Summary)
+Akıllı Enerji Yönetim Sistemi'nin başlangıç aşamasındaki temel Spring Boot yapısı, gerçek dünyadaki IoT gereksinimlerini karşılayacak şekilde profesyonel bir çok katmanlı mimariye (N-Tier Architecture) geçirilmiştir.
+
+Projenin yeni yetenekleri:
+* Gerçek Zamanlı Veri Akışı: Sensör verilerinin milisaniyelik hızlarda sisteme aktarımı (MQTT ve WebSocket ile).
+* Makine Öğrenimi (ML) Katmanı: Sistem geçmiş verilere dayanarak hem gelecek tüketimleri tahmin edebilir (Forecasting) hem de anormallikleri saptayabilir (Anomaly Detection) hale getirilmiştir.
+* Konteyner Mimarisi (Docker): Uygulamanın bağlı olduğu veritabanı ve mesaj kuyruğu sistemleri tek bir komutla (docker-compose up) izole ve hatasız şekilde  kurulabilir hale geldi.
+* Toplamda 17 yeni Java sınıfı, 6 yeni kütüphane/bağımlılık, 3 konfigürasyon dosyası sisteme sorunsuz bir şekilde entegre edilmiştir.
+
+Ayrıca kod düzeni; config, controller, dto, exception, ml, model, mqtt, repository, service gibi kurumsal standartlara uygun paket (package) yapısına bölünmüştür.
+
+
+## 2. Sisteme Eklenen Gelişmiş Teknolojiler ve Bağımlılıklar (pom.xml)
+Sistemi daha güçlü hale getirmek için dahil edilen teknolojiler:
+
+| Teknoloji / Kütüphane        | Kullanım Amacı ve Sistemdeki Rolü                                                                          |
+|------------------------------|------------------------------------------------------------------------------------------------------------|
+|Spring Integration MQTT       | Eclipse Paho) IoT cihazlarından gelecek verileri yüksek hızla, paket sızması yaşamadan alabilmemizi        |
+|                              | (Subscribe) ve cihazlara otonom şekilde açma/kapama komutu verebilmemizi (Publish) sağlayan MQTT broker    |
+|                              | entegrasyonu.                                                                                              |
+| Spring Boot WebSocket	       | Tüketim verilerini ve uyarı durumlarını sürekli sayfayı yenilemeye gerek kalmadan, milisaniyelik hızlarla  |
+|                              | Frontend (Arayüz) tarafındaki Grafana veya Dashboard'umuza anlık (Push) ileten altyapı.                    |
+| Smile ML & Commons Math      | Projenin "Akıllı" kısmını oluşturan Veri Bilimi (Data Science) kütüphaneleri. Algoritmaların Java tabanlı, |
+|                              | hızlı ve ekstra bir Python sunucusuna ihtiyaç duymadan koşmasını sağlar. K-Means (Gruplama), Isolation     |
+|                              | Forest (Anomali) ve Linear Regression algoritmalarını destekler.                                           |
+| Spring Boot Validation       | DTO'lar aracılığıyla dış dünyadan (MQTT veya HTTP) sisteme giren JSON verilerinin doğru tiplerde olup      |
+|                              | olmadığını anında kontrol edip güvenliği sıkılaştıran veri doğrulama mekanizması.                          |
+| Spring Boot Actuator         | Uygulamanın ne kadar CPU/RAM tükettiğini, veri tabanı bağlantılarının ne durumda olduğunu                  |
+|                              | (/actuator/health) sürekli monitör etmek için eklenen telemetri aracı.                                     |
+
+
+## 3. Yeni Yazılım Mimarisi (Katmanlı Yapı)
+Eklentilerle birlikte projemiz Spagetti Kod yaklaşımından çıkıp Modüler yapıya geçmiştir. İşte teknik katmanlar ve görevleri:
+
+### 3.1. Konfigürasyon ve Güvenlik Katmanı (/config)
+* InfluxDBConfig: Projenin kalbi olan Zaman Serisi Veritabanına (Time Series Database) güvenli ve performanslı bağlantıyı sağlayan havuz (pool) yöneticisi.
+* MqttConfig: Gelen mesajları karşılamak için Inbound, geri mesaj fırlatmak için Outbound kanalları (Channel) açan mesajlaşma konfigürasyonu. Uygulama ayağa kalkarken broker çökmüş bile olsa ana uygulamanın çökmesini önleyecek autoStartup=false gibi güvenli hatalı-idare (Graceful Degradation) özellikleri uygulandı.
+* SecurityConfig & WebSocketConfig: İstemcilere hangi verilerin açık (Örn: Web arayüzü), hangi kanalların özel (Admin yetkisi) olduğunu yöneten ağ protokolleri.
+
+### 3.2. MQTT İletişim Katmanı (/mqtt)
+Sensörlerin uygulama ile konuştuğu adaptör kısmıdır.
+* MqttMessageHandler: Binlerce sensör verisini dinler. Payloadı JSON'dan okuyarak, InfluxDB Point nesnesine çevirir ve veri tabanına akıtır. Veri akarken, limiti aşıp aşmadığına bakar (checkThresholds) ve gerekirse sistem genelinde "Kırmızı Alarm" bayrağı çeker.
+* Sistem enerji/bina1/oda5 şeklinde esnek haberleşme topicleri dinleyecek formata evriltilmiştir.
+
+### 3.3. Depolama Katmanı (/repository)
+Veri erişim deseninin (Repository Pattern) InfluxDB ortamına uygulanması:
+* InfluxDBRepository: Standart SQL komutları yerine Influx'ın yeni sorgu dili olan Flux kullanarak veriyi işler.
+* Ortalama (Mean), Toplam (Sum), En Yüksek (Max) değerler doğrudan uygulama işlemcisi yerine veritabanı dilinde (Flux aggregateWindow) yorulmadan toplanarak sunucu yükü hafifletilmiştir.
+
+### 3.4. Yapay Zeka ve Optimizasyon Katmanı (/ml)
+Daha önce planları yapılan yapay zeka tasarımları koda dönüştürüldü:
+* EnergyForecastService: Geçmiş 24 saatlik verilere ve Doğrusal Regresyon (Linear Regression) analizine bakarak, önümüzdeki 6 saatte hangi cihazların ne kadar elektrik harcayacağını %95 güven aralığı ile tahminler.
+* AnomalyDetectionService: Her 5 dakikada bir veri setini inceleyerek Z-Score (Standart Sapma Tabanlı) modeli ile çalışır. Bir motor veya klima birdenbire normalinden (beklenen trendden) fazla enerji harcamaya başlarsa izolasyon kurallarına göre anında "Bakım Gerekiyor" veya "Cihaz Arızası" şeklinde otonom anomali (Anomaly) raporlar.
+* EnergyOptimizationService: Açgözlü Algoritma (Greedy Algorithm) yaklaşımı ile bir "Enerji Tasarruf Modu" simüle eder. Eğer bina maksimum enerji kotalarına yaklaşırsa; Klima/Isıtıcı gibi lüks cihazların otomatik kısıldığı, Acil Durum cihazlarının ve bilgisayarların çalışmaya devam ettiği dinamik cihaz önceliklendirme matrisini hesaplar.
+
+
+## 4. Geliştirici ve Üretim (Dev/Prod) Profil Sistemi
+Uygulamanızın aynı anda hem lokal bilgisayarınızda deneme yapmak hem de bulutta gerçek yayına çıkmak üzere tasarlandı. application.properties dosyası yeteneklerine göre ayrıldı:
+* application-dev.properties : Gerçek InfluxDB bulamasa dahi sistemi simüle edilmiş test verileriyle (Mocking) "sanki sensörler bağlıymış gibi" çalıştıran geliştirme modu.
+* application-prod.properties : Gerçek ortam şifrelerinin korunduğu, sadece yetkili Docker konteynerlarıyla konuşabilen sert Production (Üretim) ortam listesi.
+
+
+## 5. Dockerized (Konteyner Mimarisi) Kurulum ve Sistem Dizaynı
+Bir takım projesinde en büyük sorunlardan biri "Benim bilgisayarımda çalışıyordu, sende neden çalışmadı?" sendromudur. Bunu çözmek için projeye bir docker-compose.yml eklendi.
+
+### 5.1 InfluxDB Servisi 8086 portunda otomatik veri tabloları (Bucket: enerji_verileri) ve yetki tokenleri hazır şekilde ayağa kalkar.
+### 5.2 Eclipse Mosquitto (MQTT Broker) 1883 portu ve mosquitto.conf güvenlik dosyası işlenmiş bir biçimde arka planda sensör beklemeye başlar.
+
+
+## 6. Proje Doğrulama (Verification & Test)
+* Yapılan bütün değişikliklerin mimaride kırılmalara yol açıp açmadığı analiz edilmiştir.
+* Maven Lifecycle kullanılarak (mvn compile) toplam 32 Java kaynak dosyasının (Sınıf, Interface vb.) kusursuz şekilde derlendiği,
+DTO Validasyonlarının test edildiği,
+* Bağımlılık (Dependency Injection) paketlerinde herhangi bir çakışma (Conflict) veya çevrimsel bağımlılık (Circular Dependency) olmadığı başarıyla kanıtlanmıştır.
+* BUILD SUCCESS sertifikasyonu ile sistem kusursuz çalışma onayı alıp GitHub ana dizinine (master) merge edilmiştir. 🚀
+
+
+
+
+
+
+
