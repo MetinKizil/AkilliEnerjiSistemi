@@ -1,6 +1,6 @@
 package com.akillienerji.AkilliEnerjiSistemi.controller;
 
-import com.akillienerji.AkilliEnerjiSistemi.NotificationService;
+import com.akillienerji.AkilliEnerjiSistemi.service.NotificationService;
 import com.akillienerji.AkilliEnerjiSistemi.service.AlertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

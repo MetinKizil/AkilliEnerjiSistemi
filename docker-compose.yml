@@ -1,0 +1,72 @@
+# ============================================================
+# Akilli Enerji Yonetim Sistemi — Docker Compose
+# ============================================================
+# Kullanim:
+#   docker-compose up -d          → Tum servisleri baslat
+#   docker-compose down           → Tum servisleri durdur
+#   docker-compose logs -f        → Logları takip et
+# ============================================================
+
+version: '3.8'
+
+services:
+  # ---- InfluxDB: Zaman Serisi Veritabani ----
+  influxdb:
+    image: influxdb:2.7
+    container_name: akilli-enerji-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin12345
+      - DOCKER_INFLUXDB_INIT_ORG=akillienerji
+      - DOCKER_INFLUXDB_INIT_BUCKET=enerji_verileri
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    restart: unless-stopped
+    networks:
+      - enerji-network
+
+  # ---- Eclipse Mosquitto: MQTT Broker ----
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: akilli-enerji-mosquitto
+    ports:
+      - "1883:1883"     # MQTT
+      - "9001:9001"     # WebSocket
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    restart: unless-stopped
+    networks:
+      - enerji-network
+
+  # ---- Spring Boot Uygulama (opsiyonel — yerel calistirmada kapatilabilir) ----
+  # app:
+  #   build: .
+  #   container_name: akilli-enerji-app
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=prod
+  #     - INFLUXDB_TOKEN=my-super-secret-auth-token
+  #   depends_on:
+  #     - influxdb
+  #     - mosquitto
+  #   restart: unless-stopped
+  #   networks:
+  #     - enerji-network
+
+volumes:
+  influxdb-data:
+  influxdb-config:
+  mosquitto-data:
+  mosquitto-log:
+
+networks:
+  enerji-network:
+    driver: bridge
