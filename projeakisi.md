@@ -465,20 +465,11 @@ Ayrıca kod düzeni; config, controller, dto, exception, ml, model, mqtt, reposi
 ## 2. Sisteme Eklenen Gelişmiş Teknolojiler ve Bağımlılıklar (pom.xml)
 Sistemi daha güçlü hale getirmek için dahil edilen teknolojiler:
 
-| Teknoloji / Kütüphane        | Kullanım Amacı ve Sistemdeki Rolü                                                                          |
-|------------------------------|------------------------------------------------------------------------------------------------------------|
-|Spring Integration MQTT       | Eclipse Paho) IoT cihazlarından gelecek verileri yüksek hızla, paket sızması yaşamadan alabilmemizi        |
-|                              | (Subscribe) ve cihazlara otonom şekilde açma/kapama komutu verebilmemizi (Publish) sağlayan MQTT broker    |
-|                              | entegrasyonu.                                                                                              |
-| Spring Boot WebSocket	       | Tüketim verilerini ve uyarı durumlarını sürekli sayfayı yenilemeye gerek kalmadan, milisaniyelik hızlarla  |
-|                              | Frontend (Arayüz) tarafındaki Grafana veya Dashboard'umuza anlık (Push) ileten altyapı.                    |
-| Smile ML & Commons Math      | Projenin "Akıllı" kısmını oluşturan Veri Bilimi (Data Science) kütüphaneleri. Algoritmaların Java tabanlı, |
-|                              | hızlı ve ekstra bir Python sunucusuna ihtiyaç duymadan koşmasını sağlar. K-Means (Gruplama), Isolation     |
-|                              | Forest (Anomali) ve Linear Regression algoritmalarını destekler.                                           |
-| Spring Boot Validation       | DTO'lar aracılığıyla dış dünyadan (MQTT veya HTTP) sisteme giren JSON verilerinin doğru tiplerde olup      |
-|                              | olmadığını anında kontrol edip güvenliği sıkılaştıran veri doğrulama mekanizması.                          |
-| Spring Boot Actuator         | Uygulamanın ne kadar CPU/RAM tükettiğini, veri tabanı bağlantılarının ne durumda olduğunu                  |
-|                              | (/actuator/health) sürekli monitör etmek için eklenen telemetri aracı.                                     |
+* Spring Integration MQTT: (Eclipse Paho) IoT cihazlarından gelecek verileri yüksek hızla, paket sızması yaşamadan alabilmemizi (Subscribe) ve cihazlara otonom şekilde açma/kapama komutu verebilmemizi (Publish) sağlayan MQTT broker entegrasyonu.
+* Spring Boot WebSocket: Tüketim verilerini ve uyarı durumlarını sürekli sayfayı yenilemeye gerek kalmadan, milisaniyelik hızlarla Frontend (Arayüz) tarafındaki Grafana veya Dashboard'umuza anlık (Push) ileten altyapı.
+* Smile ML & Commons Math: Projenin "Akıllı" kısmını oluşturan Veri Bilimi (Data Science) kütüphaneleri. Algoritmaların Java tabanlı, hızlı ve ekstra bir Python sunucusuna ihtiyaç duymadan koşmasını sağlar. K-Means (Gruplama), Isolation Forest (Anomali) ve Linear Regression algoritmalarını destekler.
+* Spring Boot Validation: DTO'lar aracılığıyla dış dünyadan (MQTT veya HTTP) sisteme giren JSON verilerinin doğru tiplerde olup olmadığını anında kontrol edip güvenliği sıkılaştıran veri doğrulama mekanizması.
+* Spring Boot Actuator: Uygulamanın ne kadar CPU/RAM tükettiğini, veri tabanı bağlantılarının ne durumda olduğunu (/actuator/health) sürekli monitör etmek için eklenen telemetri aracı.
 
 
 ## 3. Yeni Yazılım Mimarisi (Katmanlı Yapı)
