@@ -518,6 +518,16 @@ DTO Validasyonlarının test edildiği,
 * BUILD SUCCESS sertifikasyonu ile sistem kusursuz çalışma onayı alıp GitHub ana dizinine (master) merge edilmiştir. 🚀
 
 
+### 🟢 Sistem Entegrasyon ve E2E Kalite Kontrol (Tamamlandı)
+
+**Yapılan İşlemler:**
+* **Broker Doğrulaması:** `broker.emqx.io` üzerinden genel test sunucusu yapılandırıldı.
+* **Loopback Testi:** `sensor/enerji` topiği üzerinden Publish/Subscribe döngüsü test edildi. Veri iletiminin kesintisiz olduğu ve broker'ın veriyi doğru şekilde dağıttığı doğrulandı.
+* **Veri Formatı Kontrolü:** Örnek tüketim verisi (`{"tuketim": 250}`) başarıyla iletildi.
+* **Sistem Entegrasyon Hazırlığı:** Berkay ve Utku'nun modülleri (Spring Boot & InfluxDB) tamamlandığında, veri akışının bu broker üzerinden sisteme bağlanması için gerekli altyapı test edildi.
+
+**Sonuç:** MQTT Broker tıkır tıkır çalışıyor. Sensörden gönderilecek veriler sisteme girmeye hazır.
+
 
 
 
