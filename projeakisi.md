@@ -560,6 +560,6 @@ Bu yapılandırma sayesinde, anlık izleme için gereken yüksek çözünürlük
 
 
 
-####Enerji Tüketim Tahmin Algoritması Araştırması ve Seçimi Raporu
+#### Enerji Tüketim Tahmin Algoritması Araştırması ve Seçimi Raporu
 
 [Enerji Tüketim Tahmin Algoritması Araştırması ve Seçimi Raporu.docx](https://github.com/user-attachments/files/26575847/Enerji.Tuketim.Tahmin.Algoritmasi.Arastirmasi.ve.Secimi.Raporu.docx)
