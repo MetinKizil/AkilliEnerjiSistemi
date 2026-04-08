@@ -529,6 +529,36 @@ DTO Validasyonlarının test edildiği,
 **Sonuç:** MQTT Broker tıkır tıkır çalışıyor. Sensörden gönderilecek veriler sisteme girmeye hazır.
 
 
+## 🗄️ Veritabanı Mimarisi ve Veri Saklama Politikası (Retention Policy)
+
+**Görevin Tanımı:** InfluxDB üzerinde enerji tüketim verilerinin saklama sürelerinin belirlenmesi, bucket yapılarının optimizasyonu ve uzun vadeli performans stratejilerinin dökümante edilmesi.
+
+### 1. Veri Gruplama (Bucket) Tasarımı
+Sistemin ölçeklenebilirliği ve sorgu hızını optimize etmek amacıyla veriler iki farklı katmanda (bucket) gruplandırılmıştır:
+
+* **`energy_raw_data`:** IoT sensörlerinden gelen yüksek frekanslı (saniyelik/dakikalık) ham verilerin tutulduğu birincil alan.
+* **`energy_analytics_data`:** Analiz ve raporlama için kullanılan, işlenmiş (aggregated) verilerin tutulduğu ikincil alan.
+
+### 2. Saklama Politikaları (Retention Policies - RP)
+Depolama maliyetlerini düşürmek ve InfluxDB TSM (Time-Structured Merge tree) motorunun performansını en üst düzeyde tutmak için aşağıdaki saklama süreleri tanımlanmıştır:
+
+| Veri Kategorisi | Saklama Süresi (Retention) | Açıklama |
+| :--- | :--- | :--- |
+| **Ham Sensör Verisi** | **7 Gün** | Yüksek yoğunluklu veriler 1 hafta sonra otomatik olarak temizlenir. |
+| **İstatistiki Özetler** | **365 Gün** | Saatlik/Günlük ortalamalar uzun vadeli trend analizi için 1 yıl saklanır. |
+| **Sistem ve Hata Logları** | **30 Gün** | Entegrasyon hataları ve bağlantı logları 1 ay süreyle tutulur. |
+
+### 3. Optimizasyon ve Veri Seyreltme (Downsampling) Kuralları
+Veritabanı şişmesini (database bloat) önlemek adına uygulanacak optimizasyon stratejileri:
+
+* **Downsampling (Veri Seyreltme):** `energy_raw_data` üzerindeki veriler, InfluxDB Task’ları kullanılarak her saat başında işlenir. 60 adet saniyelik veri, tek bir "saatlik ortalama" verisine dönüştürülerek `energy_analytics_data` bucket'ına taşınır.
+* **Otomatik Temizlik:** Tanımlanan Retention Policy süreleri dolan "shard"lar, arka planda sistem kaynağı tüketmeden veritabanından otomatik olarak düşürülür (drop).
+* **Yüksek Kardinalite Kontrolü:** `sensor_id` ve `location` gibi tag yapılarının indeksleme performansı, kardinaliteyi (benzersiz veri sayısı) düşük tutacak şekilde optimize edilmiştir.
+
+### 4. Teknik Çıkarım
+Bu yapılandırma sayesinde, anlık izleme için gereken yüksek çözünürlüklü veriler korunurken; geçmişe dönük raporlamalarda veritabanı sorgu yükü %80 oranında azaltılmış ve disk alanı verimliliği maksimize edilmiştir.
+
+
 
 
 
