@@ -563,3 +563,34 @@ Bu yapılandırma sayesinde, anlık izleme için gereken yüksek çözünürlük
 ## Enerji Tüketim Tahmin Algoritması Araştırması ve Seçimi Raporu
 
 [Enerji Tüketim Tahmin Algoritması Araştırması ve Seçimi Raporu.docx](https://github.com/user-attachments/files/26575847/Enerji.Tuketim.Tahmin.Algoritmasi.Arastirmasi.ve.Secimi.Raporu.docx)
+
+
+
+
+# 📊 Grafana Dashboard Tasarımı ve Gereksinim Analizi
+
+> **Özet:** Projenin kullanıcı arayüzü (UI) ve veri görselleştirme altyapısının InfluxDB & Grafana kullanılarak projelendirilmesi.
+
+---
+
+## 🎯 1. Görüntülenecek Temel Metrikler (KPI)
+Kullanıcının sistemi anında kavrayabilmesi için panelde yer alacak ana veriler şunlardır:
+* **Anlık Güç Tüketimi (Watt):** Sistemin o anki yük durumu.
+* **Toplam Enerji Tüketimi (kWh):** Günlük ve haftalık kümülatif tüketim.
+* **Şebeke Durumu:** Dalgalanmaları izlemek için Voltaj (V) ve Akım (A) değerleri.
+* **Cihaz Bazlı Dağılım:** Hangi cihazın (Klima, Aydınlatma vb.) ne kadar enerji harcadığı.
+
+## 📈 2. Kullanılacak Grafik Türleri (Panel Tipleri)
+* **Stat Panel (Rakam Paneli):** Anlık Tüketim gibi doğrudan, büyük puntoyla görülmesi gereken değerler için.
+* **Time Series (Çizgi Grafik):** Son 24 saatlik enerji tüketim trendini ve pik noktalarını izlemek için.
+* **Gauge (Gösterge):** Kritik güç sınırına ne kadar yaklaşıldığını görselleştirmek için (🟢 Güvenli, 🟡 Uyarı, 🔴 Tehlike).
+* **Donut Chart (Pasta Grafik):** Toplam tüketimin bağlı cihazlara göre yüzdelik dağılımını göstermek için.
+
+## ⚙️ 3. Veri Kaynağı ve Sorgu Mimarisi
+- **Data Source:** Zaman serisi odaklı veritabanı olan `InfluxDB`
+- **Sorgu Dili:** Grafana üzerinden `Flux` dili ile sorgular yazılacaktır.
+- **Yenileme Hızı:** Gerçek zamanlı izleme için panellerin `5 saniyede bir` güncellenmesi planlanmıştır.
+
+## 🎛️ 4. Kullanıcı Etkileşimi (Interactivity)
+- **Zaman Filtresi (Time Picker):** "Son 15 Dakika", "Son 24 Saat" gibi aralıklara hızlı geçiş.
+- **Değişkenler (Variables):** Sadece belirli bir sensörün verisini getirmek için açılır menüler.
