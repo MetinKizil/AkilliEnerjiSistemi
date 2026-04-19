@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Akilli Enerji Yonetim Sistemi - Dashboard">
+    <title>Dashboard | Akilli Enerji Sistemi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-left">
+            <div class="nav-logo">
+                <i class="fas fa-bolt"></i>
+                <span>Akilli Enerji</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-status" id="connectionStatus">
+                <span class="status-dot online"></span>
+                <span>Bagli</span>
+            </div>
+            <div class="nav-user" id="navUser">
+                <i class="fas fa-user-circle"></i>
+                <span id="navUsername">Kullanici</span>
+            </div>
+            <button class="nav-btn logout-btn" id="logoutBtn" title="Cikis Yap">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cikis</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="dashboard-main">
+        <!-- KPI CARDS -->
+        <section class="kpi-section" id="kpiSection">
+            <div class="kpi-card consumption" id="kpiConsumption">
+                <div class="kpi-icon"><i class="fas fa-plug"></i></div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Anlik Tuketim</span>
+                    <span class="kpi-value" id="valConsumption">--</span>
+                    <span class="kpi-unit">kW</span>
+                </div>
+                <div class="kpi-trend" id="trendConsumption">
+                    <i class="fas fa-arrow-up"></i> <span>0%</span>
+                </div>
+            </div>
+
+            <div class="kpi-card production" id="kpiProduction">
+                <div class="kpi-icon"><i class="fas fa-solar-panel"></i></div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Gunes Uretimi</span>
+                    <span class="kpi-value" id="valProduction">--</span>
+                    <span class="kpi-unit">kW</span>
+                </div>
+                <div class="kpi-trend up" id="trendProduction">
+                    <i class="fas fa-arrow-up"></i> <span>0%</span>
+                </div>
+            </div>
+
+            <div class="kpi-card battery" id="kpiBattery">
+                <div class="kpi-icon"><i class="fas fa-battery-three-quarters"></i></div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Batarya Seviyesi</span>
+                    <span class="kpi-value" id="valBattery">--</span>
+                    <span class="kpi-unit">%</span>
+                </div>
+                <div class="kpi-bar">
+                    <div class="kpi-bar-fill" id="batteryBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="kpi-card cost" id="kpiCost">
+                <div class="kpi-icon"><i class="fas fa-coins"></i></div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Gunluk Maliyet</span>
+                    <span class="kpi-value" id="valCost">--</span>
+                    <span class="kpi-unit">TL</span>
+                </div>
+                <div class="kpi-trend" id="trendCost">
+                    <i class="fas fa-minus"></i> <span>stabil</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHART + CONTROLS -->
+        <section class="chart-section">
+            <div class="section-card chart-card">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-area"></i> Enerji Gecmisi</h2>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" data-hours="6" id="btnHours6">6 Saat</button>
+                        <button class="chart-btn" data-hours="12" id="btnHours12">12 Saat</button>
+                        <button class="chart-btn" data-hours="24" id="btnHours24">24 Saat</button>
+                        <button class="chart-btn" data-hours="48" id="btnHours48">48 Saat</button>
+                        <button class="icon-btn refresh-btn" id="btnRefreshChart" title="Grafik Yenile">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="energyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEVICES + ALERTS -->
+        <section class="panels-section">
+            <!-- DEVICE MANAGEMENT -->
+            <div class="section-card devices-card">
+                <div class="section-header">
+                    <h2><i class="fas fa-microchip"></i> Cihaz Yonetimi</h2>
+                    <div class="device-stats">
+                        <span class="device-count" id="deviceCount">0/0 Aktif</span>
+                    </div>
+                </div>
+                <div class="device-list" id="deviceList">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Cihazlar yukleniyor...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALERTS PANEL -->
+            <div class="section-card alerts-card">
+                <div class="section-header">
+                    <h2><i class="fas fa-bell"></i> Uyarilar</h2>
+                    <div class="alert-badge" id="alertBadge">0</div>
+                </div>
+                <div class="alert-list" id="alertList">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Uyarilar yukleniyor...</span>
+                    </div>
+                </div>
+
+                <!-- THRESHOLD SETTINGS (Admin Only) -->
+                <div class="threshold-section" id="thresholdSection" style="display: none;">
+                    <h3><i class="fas fa-sliders-h"></i> Esik Degeri Ayarlari</h3>
+                    <div class="threshold-form">
+                        <div class="threshold-group">
+                            <label>Max Tuketim (kW)</label>
+                            <input type="number" id="thresholdMax" step="10" min="0">
+                        </div>
+                        <div class="threshold-group">
+                            <label>Uyari Seviyesi (kW)</label>
+                            <input type="number" id="thresholdWarning" step="10" min="0">
+                        </div>
+                        <div class="threshold-group">
+                            <label>Kritik Seviye (kW)</label>
+                            <input type="number" id="thresholdCritical" step="10" min="0">
+                        </div>
+                        <button class="save-threshold-btn" id="btnSaveThreshold">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOTTOM BAR -->
+        <section class="bottom-section">
+            <div class="section-card actions-card">
+                <div class="action-buttons">
+                    <button class="action-btn" id="btnRefreshAll" title="Tum Verileri Yenile">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Verileri Yenile</span>
+                    </button>
+                    <button class="action-btn" id="btnExportCSV" title="Verileri Disa Aktar">
+                        <i class="fas fa-file-csv"></i>
+                        <span>CSV Indir</span>
+                    </button>
+                    <button class="action-btn" id="btnCheckEnergy" title="Enerji Kontrolu">
+                        <i class="fas fa-search"></i>
+                        <span>Enerji Kontrol</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
