@@ -114,7 +114,7 @@ public class MqttConfig {
      * Cihazlara komut gondermek icin kullanilir.
      */
     @Bean
-    public MessageHandler mqttOutbound() {
+    public MqttPahoMessageHandler mqttOutbound() {
         MqttPahoMessageHandler handler =
                 new MqttPahoMessageHandler(clientId + "-outbound", mqttClientFactory());
         handler.setAsync(true);

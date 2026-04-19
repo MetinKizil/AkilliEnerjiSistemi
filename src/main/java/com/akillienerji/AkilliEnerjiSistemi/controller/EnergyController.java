@@ -5,6 +5,8 @@ import com.akillienerji.AkilliEnerjiSistemi.service.AlertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.akillienerji.AkilliEnerjiSistemi.service.EnergyDataService;
+import com.akillienerji.AkilliEnerjiSistemi.model.EnergyData;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +20,9 @@ public class EnergyController {
 
     @Autowired
     private AlertService alertService;
+
+    @Autowired
+    private EnergyDataService energyDataService;
 
     /**
      * Enerji tuketimi kontrol et
@@ -37,5 +42,14 @@ public class EnergyController {
             "Enerji limiti asildi! Alarm olusturuldu." :
             "Tuketim normal seviyede.");
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Anlik enerji tuketim verisini getir
+     * GET /api/energy/data
+     */
+    @GetMapping("/data")
+    public ResponseEntity<EnergyData> getEnergyData() {
+        return ResponseEntity.ok(energyDataService.getRealtimeData());
     }
 }
