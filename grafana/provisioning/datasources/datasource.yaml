@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    uid: akilli_enerji_influx
+    url: http://localhost:8086 # Docker içinde çalışıyorsa url'i http://influxdb:8086 vb. yapmalısınız.
+    jsonData:
+      version: Flux
+      organization: akillienerji
+      defaultBucket: enerji_verileri
+    secureJsonData:
+      # InfluxDB token buraya girilmeli
+      token: "YOUR_INFLUXDB_TOKEN"
