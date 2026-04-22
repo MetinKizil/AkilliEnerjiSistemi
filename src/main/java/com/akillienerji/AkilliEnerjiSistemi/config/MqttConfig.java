@@ -96,7 +96,7 @@ public class MqttConfig {
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(qos);
         adapter.setOutputChannel(mqttInputChannel());
-        adapter.setAutoStartup(false); // Manuel baslatma — broker yoksa hata vermez
+        adapter.setAutoStartup(true); // Otomatik baslatma aktif
         logger.info("MQTT Inbound Adapter yapilandirildi. Topics: {}", String.join(", ", topics));
         return adapter;
     }
@@ -118,7 +118,7 @@ public class MqttConfig {
         MqttPahoMessageHandler handler =
                 new MqttPahoMessageHandler(clientId + "-outbound", mqttClientFactory());
         handler.setAsync(true);
-        handler.setDefaultTopic("cihaz/komut");
+        handler.setDefaultTopic("sistem/uyari");
         handler.setDefaultQos(qos);
         logger.info("MQTT Outbound Handler yapilandirildi.");
         return handler;

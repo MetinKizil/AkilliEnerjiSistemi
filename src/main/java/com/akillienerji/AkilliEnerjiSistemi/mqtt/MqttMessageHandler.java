@@ -47,6 +47,8 @@ public class MqttMessageHandler {
     /**
      * MQTT mesajlarini isler.
      * Spring Integration tarafindan mqttInputChannel uzerinden cagirilir.
+     * Yeni topic standardi: enerji/{lokasyon_id}/{oda_id}/{cihaz_turu}/{cihaz_id}/{veri_tipi}
+     * Yeni payload standardi: {"cihazId":"...", "zamanDamgasi":..., "metrikler":{...}}
      *
      * @param message Gelen MQTT mesaji
      */
@@ -58,57 +60,85 @@ public class MqttMessageHandler {
         logger.info("MQTT mesaji alindi - Topic: {}, Payload: {}", topic, payload);
 
         try {
-            // JSON payload'u SensorDataDTO'ya donustur
-            SensorDataDTO sensorData = objectMapper.readValue(payload, SensorDataDTO.class);
+            if (topic != null && topic.startsWith("enerji/")) {
+                com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(payload);
+                
+                // Payload'dan temel bilgileri cikar
+                String cihazId = rootNode.has("cihazId") ? rootNode.get("cihazId").asText() : "unknown";
+                long zamanDamgasi = rootNode.has("zamanDamgasi") ? rootNode.get("zamanDamgasi").asLong() : System.currentTimeMillis();
+                
+                com.fasterxml.jackson.databind.JsonNode metrikler = rootNode.get("metrikler");
+                
+                if (metrikler != null && metrikler.isObject()) {
+                    // Ana metrik (ornek: aktifGuc) value olarak atanir
+                    double aktifGuc = metrikler.has("aktifGuc") ? metrikler.get("aktifGuc").asDouble() : 
+                                      (metrikler.has("sicaklik") ? metrikler.get("sicaklik").asDouble() : 0.0);
+                    
+                    SensorReading reading = convertToSensorReading(topic, cihazId, zamanDamgasi, aktifGuc, metrikler);
 
-            // SensorReading'e donustur
-            SensorReading reading = convertToSensorReading(sensorData, topic);
+                    // InfluxDB'ye yaz
+                    influxDBRepository.writeSensorData(reading);
+                    logger.info("Sensor verisi kaydedildi: {} - {} {}", reading.getDeviceId(), reading.getValue(), reading.getUnit());
 
-            // InfluxDB'ye yaz
-            influxDBRepository.writeSensorData(reading);
-            logger.info("Sensor verisi kaydedildi: {} - {} {}",
-                    sensorData.getDeviceId(), sensorData.getValue(), sensorData.getUnit());
-
-            // Esik kontrolu
-            checkThresholds(sensorData);
-
+                    // Esik kontrolu (AlertService icinde SensorDataDTO bekledigi icin mock DTO olusturuyoruz)
+                    SensorDataDTO mockDto = new SensorDataDTO(cihazId, reading.getSensorType(), aktifGuc, reading.getUnit(), null);
+                    checkThresholds(mockDto);
+                }
+            } else {
+                logger.info("Bilinmeyen topic: {}. Mesaj atlandi.", topic);
+            }
         } catch (Exception e) {
-            logger.error("MQTT mesaj isleme hatasi - Topic: {}, Hata: {}", topic, e.getMessage());
+            logger.error("MQTT mesaj isleme hatasi - Topic: {}, Hata: {}", topic, e.getMessage(), e);
         }
     }
 
     /**
-     * SensorDataDTO'yu SensorReading modeline donusturur.
-     * Topic yapisindan ek bilgi cikarir (bina, oda vb.)
+     * Yeni topic ve payload yapisini SensorReading modeline donusturur.
      */
-    private SensorReading convertToSensorReading(SensorDataDTO dto, String topic) {
-        String measurement = determineMeasurement(dto.getType());
-
-        SensorReading reading = new SensorReading(
-                measurement,
-                dto.getDeviceId(),
-                dto.getType(),
-                dto.getValue(),
-                dto.getUnit(),
-                dto.getLocation()
-        );
-
-        // Timestamp ayarla
-        if (dto.getTimestamp() != null) {
-            reading.setTimestamp(dto.getTimestamp().atZone(java.time.ZoneId.systemDefault()).toInstant());
-        } else {
-            reading.setTimestamp(Instant.now());
-        }
-
-        // Topic'ten konum bilgisi cikar (orn: enerji/bina1/oda5)
-        String[] topicParts = topic.split("/");
-        if (topicParts.length >= 3) {
-            reading.addTag("bina", topicParts[1]);
-            reading.addTag("oda", topicParts[2]);
-            if (reading.getLocation() == null || reading.getLocation().isEmpty()) {
-                reading.setLocation(topicParts[1] + "/" + topicParts[2]);
+    private SensorReading convertToSensorReading(String topic, String cihazId, long zamanDamgasi, double anaDeger, com.fasterxml.jackson.databind.JsonNode metrikler) {
+        SensorReading reading = new SensorReading();
+        reading.setDeviceId(cihazId);
+        reading.setTimestamp(Instant.ofEpochMilli(zamanDamgasi));
+        reading.setValue(anaDeger);
+        
+        // Topic parse: enerji/{lokasyon_id}/{oda_id}/{cihaz_turu}/{cihaz_id}/{veri_tipi}
+        String[] parts = topic.split("/");
+        if (parts.length >= 6) {
+            reading.setLocation(parts[1] + "/" + parts[2]);
+            reading.addTag("lokasyon", parts[1]);
+            reading.addTag("oda", parts[2]);
+            reading.addTag("cihaz_turu", parts[3]);
+            reading.setMeasurement(determineMeasurement(parts[3]));
+            
+            // Cihaz turune gore sensor_type ve unit belirle
+            if ("klima".equalsIgnoreCase(parts[3]) || "aydinlatma".equalsIgnoreCase(parts[3]) || "sayac".equalsIgnoreCase(parts[3])) {
+                reading.setSensorType("ENERGY");
+                reading.setUnit("WATT");
+            } else if ("sensor".equalsIgnoreCase(parts[3])) {
+                if ("sicaklik".equalsIgnoreCase(parts[5])) {
+                    reading.setSensorType("TEMPERATURE");
+                    reading.setUnit("CELSIUS");
+                } else if ("nem".equalsIgnoreCase(parts[5])) {
+                    reading.setSensorType("HUMIDITY");
+                    reading.setUnit("PERCENT");
+                } else {
+                    reading.setSensorType("GENERAL");
+                    reading.setUnit("UNKNOWN");
+                }
             }
+        } else {
+            reading.setLocation("unknown");
+            reading.setMeasurement("genel_olcum");
+            reading.setSensorType("ENERGY");
+            reading.setUnit("WATT");
         }
+
+        // Diger metrikleri field olarak ekle
+        metrikler.fieldNames().forEachRemaining(fieldName -> {
+            if (!"aktifGuc".equals(fieldName) && !"sicaklik".equals(fieldName)) {
+                reading.addField(fieldName, metrikler.get(fieldName).asDouble());
+            }
+        });
 
         return reading;
     }

@@ -594,3 +594,84 @@ Kullanıcının sistemi anında kavrayabilmesi için panelde yer alacak ana veri
 ## 🎛️ 4. Kullanıcı Etkileşimi (Interactivity)
 - **Zaman Filtresi (Time Picker):** "Son 15 Dakika", "Son 24 Saat" gibi aralıklara hızlı geçiş.
 - **Değişkenler (Variables):** Sadece belirli bir sensörün verisini getirmek için açılır menüler.
+
+
+# MQTT Broker ve Entegrasyon Mimarisi Tasarım Raporu
+
+## 1. MQTT Broker Seçimi ve Sistem Entegrasyonu
+Projemizin gerçek zamanlı, hafif ve güvenilir veri iletişimi gereksinimlerini karşılamak için MQTT broker olarak **Eclipse Mosquitto** seçilmiştir. 
+
+**Neden Mosquitto?**
+* **Açık Kaynak ve Hafif:** Çok düşük kaynak (RAM/CPU) tüketerek binlerce anlık bağlantıyı (connection) kaldırabilmesi.
+* **Docker Entegrasyonu:** Mevcut `docker-compose.yml` yapımıza doğrudan uyumlu olan resmi Docker imajlarına (eclipse-mosquitto:2) sahip olması.
+* **QoS (Quality of Service) Desteği:** Sensör verilerinde veri kaybını önlemek için QoS 1 ve QoS 2 seviyelerini stabil şekilde desteklemesi.
+
+**Sistem Entegrasyon Yöntemi:**
+* Mosquitto, InfluxDB ve Spring Boot ile aynı özel Docker ağı (`enerji-network`) içerisinde çalışacaktır.
+* Spring Boot, `Spring Integration MQTT (Eclipse Paho)` kütüphanesi kullanarak Mosquitto'ya sürekli abone (Subscriber) kalacak ve gelen mesajları işleyecektir.
+* Edge cihazlar (sensörler), ağa dahil olduklarında `Publish` yaparak verileri gönderecektir.
+
+## 2. Güvenlik Gereksinimleri ve Konfigürasyon Adımları
+IoT sistemlerinde verinin dış müdahalelerden ve izinsiz girişlerden korunması kritik öneme sahiptir.
+
+### Kimlik Doğrulama (Authentication)
+* Anonim (Anonymous) erişim kesinlikle kapatılacaktır (`allow_anonymous false`).
+* Sadece sisteme kayıtlı olan cihazlar ve arka uç servisleri (Spring Boot), oluşturulan kullanıcı adı ve şifre (`password_file`) ile MQTT Broker'a bağlanabilecektir.
+* **Yapılacak Konfigürasyon:** `mosquitto/config/mosquitto.conf` dosyasına yetkilendirme parametreleri eklenecek ve `mosquitto_passwd` aracı ile şifreler hash'lenerek saklanacaktır.
+
+### Taşıma Katmanı Güvenliği (TLS/SSL Entegrasyonu)
+* Verilerin ağ üzerinde düz metin (plaintext) olarak dinlenmesini (Sniffing) önlemek amacıyla 1883 portuna ek olarak TLS destekli **8883 portu** aktif edilecektir.
+* **Yapılacak Konfigürasyon:**
+  * Kendi imzaladığımız (Self-Signed) veya Let's Encrypt tabanlı bir sertifika otoritesi (CA) sertifikası oluşturulacaktır.
+  * Broker için Server Certificate (sunucu sertifikası) ve Private Key üretilecektir.
+  * `mosquitto.conf` dosyasına `certfile`, `keyfile` ve `cafile` tanımlamaları eklenecek, istemciler bağlandıklarında bu CA sertifikası üzerinden güvenli (TLSv1.2/TLSv1.3) iletişim kuracaktır.
+
+## 3. MQTT Topic Yapısı ve Mesaj Formatları Tasarımı
+Sistemin esnek, ölçeklenebilir ve yönetilebilir olması için hiyerarşik bir topic mimarisi ve JSON tabanlı standartlaştırılmış bir mesaj yapısı kullanılacaktır.
+
+### Topic (Konu) Hiyerarşisi
+Genel yapı şu şekilde olacaktır:
+`enerji/{lokasyon_id}/{oda_id}/{cihaz_turu}/{cihaz_id}/{veri_tipi}`
+
+**Örnek Topic'ler:**
+* `enerji/bina1/zeminKat/klima/cihaz01/tuketim` (Klima enerji tüketimi)
+* `enerji/bina1/kat2/aydinlatma/led05/durum` (Aydınlatma açık/kapalı durumu)
+* `enerji/bina1/kat1/sensor/ortam01/sicaklik` (Oda sıcaklık sensörü)
+* `sistem/uyari/bina1/oda_10` (Sistemden cihaza giden kapatma/uyarı komutları)
+
+### Standart Mesaj Formatı (Payload)
+Tüm cihazlar, veriyi okuma ve deserialize etme kolaylığı sağlamak için **JSON** formatında mesaj gönderecektir.
+
+**1. Enerji Tüketim Mesaj Formatı (Sensör -> Sistem):**
+```json
+{
+  "cihazId": "cihaz01",
+  "zamanDamgasi": 1713784800000,
+  "metrikler": {
+    "akim": 2.4,
+    "voltaj": 220.5,
+    "aktifGuc": 529.2,
+    "frekans": 50.1
+  }
+}
+```
+
+**2. Çevresel Sensör Mesaj Formatı (Sensör -> Sistem):**
+```json
+{
+  "cihazId": "ortam01",
+  "zamanDamgasi": 1713784800000,
+  "sicaklik": 23.5,
+  "nem": 45.2
+}
+```
+
+**3. Otonom Kontrol/Komut Mesaj Formatı (Sistem -> Sensör/Röle):**
+```json
+{
+  "komutTipi": "DURUM_DEGISTIR",
+  "hedefCihazId": "klima01",
+  "parametre": "KAPAT",
+  "kaynak": "SYSTEM_AUTO_OPTIMIZATION"
+}
+```
