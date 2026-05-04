@@ -675,3 +675,24 @@ Tüm cihazlar, veriyi okuma ve deserialize etme kolaylığı sağlamak için **J
   "kaynak": "SYSTEM_AUTO_OPTIMIZATION"
 }
 ```
+
+
+Ölçeklenebilirlik ve Yük Testi (Load Testing) Görev Teslimi
+
+Görev Özeti:
+Akıllı Enerji Yönetim Sistemi projemizin 5. hafta görevi kapsamında planlanan "Sistem Ölçeklenebilirlik ve Yük Testi" aşaması başarıyla tamamlanmıştır. Geliştirilen Spring Boot tabanlı arka uç (backend) mimarisinin ve InfluxDB zaman serisi veritabanının yoğun veri akışı altındaki dayanıklılığı test edilmiştir.
+
+Gerçekleştirilen Test ve Sonuçlar:
+Sisteme Python tabanlı bir yük testi betiği (load_test.py) üzerinden eşzamanlı ve yüksek hacimli simüle edilmiş enerji tüketim verisi gönderilmiştir. Elde edilen performans metrikleri aşağıdadır:
+
+Toplam İşlenen Veri: 60.000 nokta
+
+Test Süresi: 59.16 saniye
+
+Ortalama İşlem Hızı: 1.014 veri / saniye
+
+Değerlendirme:
+Test sonucunda sistemimiz, saniyede 1000'in üzerinde (1000+ I/O) veri yazma işlemini herhangi bir darboğaz, tepki gecikmesi (latency) veya çökme yaşamadan başarıyla yönetmiştir. Altyapının bu yükü sorunsuz kaldırdığını kanıtlayan terminal çıktıları ekte sunulmuştur.
+
+<img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/5469a592-9f74-40f3-b41a-e3f446425907" />
+
