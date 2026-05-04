@@ -696,3 +696,8 @@ Test sonucunda sistemimiz, saniyede 1000'in üzerinde (1000+ I/O) veri yazma iş
 
 <img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/5469a592-9f74-40f3-b41a-e3f446425907" />
 
+## Akıllı Şebeke Entegrasyon Araştırması ve Planlaması
+
+[Akıllı Şebeke Entegrasyonu Araştırması ve Entegrasyon Planı.docx](https://github.com/user-attachments/files/27356920/Akilli.Sebeke.Entegrasyonu.Arastirmasi.ve.Entegrasyon.Plani.docx)
+
+
