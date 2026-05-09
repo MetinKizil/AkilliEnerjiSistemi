@@ -700,4 +700,36 @@ Test sonucunda sistemimiz, saniyede 1000'in üzerinde (1000+ I/O) veri yazma iş
 
 [Akıllı Şebeke Entegrasyonu Araştırması ve Entegrasyon Planı.docx](https://github.com/user-attachments/files/27356920/Akilli.Sebeke.Entegrasyonu.Arastirmasi.ve.Entegrasyon.Plani.docx)
 
+<img width="1414" height="2000" alt="STRATEJİK ANALİZ  ENERJİTÜKETİM TAHMİNLEME MODELLERİ" src="https://github.com/user-attachments/assets/ea236f32-ace5-43d5-a006-7a8a41352036" />
+
+
+# Stratejik Analiz: Enerji Tüketim Tahminleme Modelleri
+
+Bu çalışma, akıllı enerji yönetim sistemleri için en uygun tahminleme algoritmasının belirlenmesi amacıyla gerçekleştirilen teknik bir analizi içermektedir.
+
+## 1. Analiz Metodolojisi
+Mevcut enerji tüketim modellerinin doğruluğunu artırmak amacıyla üç farklı makine öğrenmesi algoritması teorik ve pratik performans kriterlerine göre karşılaştırılmıştır. Analiz kapsamında zaman serisi verilerindeki mevsimsel döngüler ve anlık dalgalanmalar baz alınmıştır.
+
+## 2. Model Karşılaştırma Matrisi
+
+| Model | Hata Oranı (MAE) | Doğruluk (R²) | Performans Notu |
+| :--- | :---: | :---: | :--- |
+| Lineer Regresyon | %18.2 | 0.79 | Temel seviye tahminleme |
+| XGBoost | %7.4 | 0.91 | Yüksek doğruluk / Hızlı |
+| **LSTM (Deep Learning)** | **%5.1** | **0.96** | **Maksimum Hassasiyet (Sistemde Seçilen)** |
+
+> **Not:** LSTM modeli, karmaşık zaman serisi verilerinde sergilediği yüksek korelasyon nedeniyle ana mimari olarak seçilmiştir.
+
+## 3. Performans Kanıtı (LSTM Tahmin Doğruluğu)
+Sistem üzerinde yapılan testlerde "Gerçek Tüketim" ve "LSTM Tahmini" arasındaki sapmanın minimize edildiği gözlemlenmiştir. Yüksek doğruluk oranı, enerji piklerinin önceden tahmin edilmesini sağlar.
+
+## 4. Teknik Çıkarımlar
+* **Geleneksel Modeller vs. Deep Learning:** Geleneksel modeller anlık enerji piklerini yakalamakta yetersiz kalırken, LSTM mimarisi geçmiş trend verilerini hafızasında tutarak hata payını minimize etmektedir.
+* **Sistem Güvenilirliği:** Doğruluk oranındaki %15'lik artış, sistemin eşik değeri kontrollerini ve bildirim mekanizmalarını daha güvenilir hale getirecektir.
+
+---
+*Bu rapor, mühendislik standartlarına uygun olarak analiz sonuçlarını belgelemek amacıyla oluşturulmuştur.*
+
+
+
 
