@@ -766,7 +766,3 @@ Sistem, uçtan uca veri akışını optimize eden 5 temel katmandan oluşmaktad�
 ### Veri Yapısı (JSON)
 Sistemde kullanılan temel veri şeması şu şekildedir:
 ```json
-
-
-          
-
