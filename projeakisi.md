@@ -732,4 +732,472 @@ Sistem üzerinde yapılan testlerde "Gerçek Tüketim" ve "LSTM Tahmini" arasın
 
 
 
+# 🛠️ Akıllı Enerji Takip Sistemi: Teknik Dokümantasyon
+
+Bu doküman, projenin sistem mimarisini, API uç noktalarını ve entegre edilen **Gemini AI** özelliklerini detaylandırmaktadır.
+
+---
+
+## 🏗️ 1. Sistem Mimarisi (Architecture Overview)
+
+Sistem, uçtan uca veri akışını optimize eden 5 temel katmandan oluşmaktadır:
+
+1.  **Sensörler (Edge Data):** Fiziksel cihazlardan gelen anlık watt ve voltaj verileri.
+2.  **InfluxDB (Zaman Serisi):** Verilerin zaman damgalı olarak yüksek hızda depolanması.
+3.  **API Katmanı (Python/Flask):** Berkay tarafından geliştirilen, veri alışverişini yöneten merkez.
+4.  **ML Modeli (LSTM):** Geçmiş verileri analiz ederek gelecek 24 saati tahmin eden derin öğrenme modeli.
+5.  **Kullanıcı Arayüzü (React):** Halenaz tarafından tasarlanan, verileri görselleştiren dashboard.
+
+---
+
+## 🔌 2. API Uç Noktaları (Endpoints)
+
+| Metot | Endpoint | Açıklama | Statü |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/status` | Sistem ve sensör bağlantı durumunu kontrol eder. | `200 OK` |
+| `GET` | `/api/data` | Anlık tüketim verilerini InfluxDB'den çeker. | `AUTH REQ` |
+| `POST` | `/api/alert` | Kullanıcı tarafından belirlenen eşik değerini günceller. | `ACTIVE` |
+| `GET` | `/api/forecast` | LSTM modelinden gelen 24 saatlik tahmini döndürür. | `CACHED` |
+
+---
+
+## 🧠 3. Veri Yapısı ve Algoritma
+
+### Veri Yapısı (JSON)
+Sistemde kullanılan temel veri şeması şu şekildedir:
+```json
+{
+  "timestamp": 1625097,
+  "deviceId": "S01",
+  "wattage": 450.2,
+  "voltage": 220.5
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teknik Mimari ve API Dokümantasyonu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .status-pulse {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        .flow-line {
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #22c55e);
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .flow-line::after {
+            content: '➔';
+            position: absolute;
+            right: -5px;
+            top: -10px;
+            color: #22c55e;
+            font-size: 12px;
+        }
+
+        .gemini-gradient {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-end mb-12 border-b border-slate-700 pb-6">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">Sistem Mimari ve API Dokümantasyonu</h1>
+                <p class="text-slate-400 mt-2">Versiyon 1.1.0 | <span class="text-green-500 font-semibold uppercase text-xs">AI Geliştirilmiş</span></p>
+            </div>
+            <div class="text-right hidden md:block">
+                <span class="text-xs uppercase tracking-widest text-slate-500 font-bold gemini-gradient">✨ GEMINI 2.5 CORE</span>
+                <p class="mono text-sm">PRJ-HEM-2024-ST-6</p>
+            </div>
+        </header>
+
+        <!-- AI Assistant Row 1: Diagnostics & Summarization -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Gemini Feature 1: Log Analysis -->
+            <div class="glass-card p-6 ai-glow border-t-2 border-blue-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
+                        <i class="fas fa-terminal text-blue-400"></i> Akıllı Log Analizi
+                    </h3>
+                    <button onclick="analyzeLogs()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded transition flex items-center gap-2">
+                        <i class="fas fa-microchip"></i> ✨ ANALİZ ET
+                    </button>
+                </div>
+                <textarea id="logInput" class="w-full h-24 bg-slate-900/50 border border-slate-700 rounded p-3 text-xs mono text-slate-300 placeholder:text-slate-600 mb-2 focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Hata loglarını buraya yapıştırın..."></textarea>
+                <div id="logResult" class="text-xs text-slate-400 italic min-h-[1.5rem]">Gemini loglarınızı bekliyor...</div>
+            </div>
+
+            <!-- Gemini Feature 2: Technical Explainer & TTS -->
+            <div class="glass-card p-6 ai-glow border-t-2 border-cyan-400">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
+                        <i class="fas fa-wand-magic-sparkles text-cyan-400"></i> Doküman Özeti
+                    </h3>
+                    <div class="flex gap-2">
+                        <button id="ttsBtn" onclick="speakSummary()" class="hidden bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold px-3 py-1 rounded transition">
+                            <i class="fas fa-volume-up"></i> ✨ DİNLE
+                        </button>
+                        <button onclick="summarizeDoc()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold px-3 py-1 rounded transition flex items-center gap-2">
+                            <i class="fas fa-file-alt"></i> ✨ ÖZETLE
+                        </button>
+                    </div>
+                </div>
+                <div id="summaryDisplay" class="bg-slate-900/50 border border-slate-700 rounded p-3 text-xs min-h-[96px] text-slate-300 leading-relaxed">
+                    Sistem mimarisinin yönetici özetini oluşturmak için butona tıklayın.
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Assistant Row 2: Schema Generation -->
+        <div class="grid grid-cols-1 gap-8 mb-12">
+            <div class="glass-card p-6 ai-glow border-t-2 border-purple-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
+                        <i class="fas fa-sitemap text-purple-400"></i> Veri Yapısı Generatörü
+                    </h3>
+                    <button onclick="generateSchema()" class="bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-bold px-4 py-1.5 rounded transition flex items-center gap-2">
+                        <i class="fas fa-plus-circle"></i> ✨ ŞEMA OLUŞTUR
+                    </button>
+                </div>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <input id="schemaPrompt" type="text" class="w-full bg-slate-900/50 border border-slate-700 rounded p-3 text-xs text-slate-300 placeholder:text-slate-600 mb-2 focus:ring-1 focus:ring-purple-500 outline-none" placeholder="Örn: Akıllı klima için sensör verisi yapısı oluştur...">
+                        <div id="schemaStatus" class="text-[10px] text-slate-500 italic">Yeni bir sensör tipi için teknik veri şeması tasarlayın.</div>
+                    </div>
+                    <div class="flex-1">
+                        <div id="schemaOutput" class="bg-black/40 border border-slate-800 rounded p-3 text-[10px] mono text-purple-300 h-24 overflow-y-auto">
+                            // Kod buraya gelecek...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classic Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <section id="archSection" class="lg:col-span-3 glass-card p-8">
+                <div class="flex items-center gap-3 mb-8">
+                    <i class="fas fa-cubes text-blue-400 text-xl"></i>
+                    <h2 class="text-xl font-semibold">Sistem Mimarisi (Architecture Overview)</h2>
+                </div>
+                
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 py-4 overflow-x-auto">
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-microchip text-2xl"></i>
+                        </div>
+                        <span class="text-sm font-bold">Sensörler</span>
+                        <span class="text-xs text-slate-500">Edge Data</span>
+                    </div>
+                    <div class="flow-line hidden md:block"></div>
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-database text-2xl"></i>
+                        </div>
+                        <span class="text-sm font-bold">InfluxDB</span>
+                        <span class="text-xs text-slate-500">Zaman Serisi</span>
+                    </div>
+                    <div class="flow-line hidden md:block"></div>
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-cloud text-2xl"></i>
+                        </div>
+                        <span class="text-sm font-bold">API Katmanı</span>
+                        <span class="text-xs text-slate-500">Berkay / Python</span>
+                    </div>
+                    <div class="flow-line hidden md:block"></div>
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-brain text-2xl"></i>
+                        </div>
+                        <span class="text-sm font-bold">ML Modeli</span>
+                        <span class="text-xs text-slate-500">LSTM / Tahmin</span>
+                    </div>
+                    <div class="flow-line hidden md:block"></div>
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-desktop text-2xl"></i>
+                        </div>
+                        <span class="text-sm font-bold">Arayüz</span>
+                        <span class="text-xs text-slate-500">Halenaz / React</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lg:col-span-2 glass-card p-6 overflow-hidden">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fas fa-link text-green-400 text-xl"></i>
+                    <h2 class="text-xl font-semibold">API Uç Noktaları (Endpoints)</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="py-3 px-2">Metot</th>
+                                <th class="py-3 px-2">Endpoint</th>
+                                <th class="py-3 px-2">Açıklama</th>
+                                <th class="py-3 px-2">Statü</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                                <td class="py-4 px-2 font-bold text-blue-400">GET</td>
+                                <td class="py-4 px-2 mono text-xs">/api/status</td>
+                                <td class="py-4 px-2 text-slate-300">Sistem ve sensör bağlantı durumunu kontrol eder.</td>
+                                <td class="py-4 px-2"><span class="status-pulse"></span> <span class="text-[10px] ml-1">200 OK</span></td>
+                            </tr>
+                            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                                <td class="py-4 px-2 font-bold text-blue-400">GET</td>
+                                <td class="py-4 px-2 mono text-xs">/api/data</td>
+                                <td class="py-4 px-2 text-slate-300">Anlık tüketim verilerini InfluxDB'den çeker.</td>
+                                <td class="py-4 px-2 text-slate-500 text-[10px]">AUTH REQ</td>
+                            </tr>
+                            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                                <td class="py-4 px-2 font-bold text-orange-400">POST</td>
+                                <td class="py-4 px-2 mono text-xs">/api/alert</td>
+                                <td class="py-4 px-2 text-slate-300">Kullanıcı tarafından belirlenen eşik değerini günceller.</td>
+                                <td class="py-4 px-2"><span class="status-pulse"></span> <span class="text-[10px] ml-1">ACTIVE</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="flex flex-col gap-6">
+                <div class="glass-card p-6 border-l-4 border-blue-500">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="fas fa-code text-blue-400"></i>
+                        <h3 class="font-bold text-sm uppercase text-slate-400 tracking-wider">Veri Yapısı</h3>
+                    </div>
+                    <p class="text-xs leading-relaxed text-slate-200">
+                        Zaman serisi (Time-series) verileri; <span class="mono text-blue-300 font-bold">Timestamp, DeviceID</span> bazlı JSON formatında işlenmektedir.
+                    </p>
+                </div>
+
+                <div class="glass-card p-6 border-l-4 border-green-500">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="fas fa-project-diagram text-green-400"></i>
+                        <h3 class="font-bold text-sm uppercase text-slate-400 tracking-wider">Algoritma</h3>
+                    </div>
+                    <p class="text-xs leading-relaxed text-slate-200">
+                        Sistem, <span class="text-green-400 font-bold">LSTM katmanı</span> ile anlık verileri karşılaştırarak %5 sapma payıyla anormallik tespiti yapar.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <footer class="mt-12 flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-800 pt-6 uppercase tracking-widest">
+            <p>© 2024 Akıllı Enerji Takip Sistemi | Enterprise Edition</p>
+            <div class="flex gap-4">
+                <span class="flex items-center gap-1"><i class="fas fa-bolt text-yellow-500"></i> Real-time Pipeline</span>
+                <span class="flex items-center gap-1"><i class="fas fa-check-circle text-green-500"></i> AI Verified</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const apiKey = ""; 
+        let lastSummary = "";
+
+        async function geminiCall(prompt, systemInstruction = "", config = {}) {
+            const maxRetries = 5;
+            let delay = 1000;
+            const model = config.model || "gemini-2.5-flash-preview-09-2025";
+            const endpoint = config.endpoint || "generateContent";
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:${endpoint}?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
+                            ...config.extraBody
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('API request failed');
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        async function analyzeLogs() {
+            const logText = document.getElementById('logInput').value;
+            const display = document.getElementById('logResult');
+            if (!logText) return;
+
+            display.innerHTML = '<span class="loading-shimmer text-blue-400 px-2 rounded">✨ Gemini Analiz Ediyor...</span>';
+            try {
+                const result = await geminiCall(
+                    `Şu logları analiz et ve çözüm odaklı, çok kısa öneriler ver: ${logText}`,
+                    "Sen uzman bir DevOps mühendisisin. Yanıtlarını Türkçe ve profesyonel ver."
+                );
+                display.innerText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            } catch (e) {
+                display.innerText = "Hata: Analiz tamamlanamadı.";
+            }
+        }
+
+        async function summarizeDoc() {
+            const display = document.getElementById('summaryDisplay');
+            const content = "Mimari: Sensör -> InfluxDB -> API -> LSTM -> React. Endpointler: /status, /data, /alert, /forecast.";
+
+            display.innerHTML = '<div class="loading-shimmer h-full w-full rounded"></div>';
+            try {
+                const result = await geminiCall(
+                    `Dokümantasyonu 3 kısa maddede özetle: ${content}`,
+                    "Sen teknik bir yazarsın. Türkçe yanıtla."
+                );
+                lastSummary = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                display.innerText = lastSummary;
+                document.getElementById('ttsBtn').classList.remove('hidden');
+            } catch (e) {
+                display.innerText = "Hata: Özet oluşturulamadı.";
+            }
+        }
+
+        async function generateSchema() {
+            const prompt = document.getElementById('schemaPrompt').value;
+            const output = document.getElementById('schemaOutput');
+            const status = document.getElementById('schemaStatus');
+            if (!prompt) return;
+
+            status.innerHTML = '<span class="text-purple-400">✨ Şema tasarlanıyor...</span>';
+            try {
+                const result = await geminiCall(
+                    `Şunun için JSON şeması ve TypeScript interface oluştur: ${prompt}`,
+                    "Sadece kod bloğunu döndür. Açıklama yapma."
+                );
+                output.innerText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                status.innerText = "Şema başarıyla oluşturuldu.";
+            } catch (e) {
+                status.innerText = "Hata oluştu.";
+            }
+        }
+
+        async function speakSummary() {
+            if (!lastSummary) return;
+            const ttsBtn = document.getElementById('ttsBtn');
+            ttsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SESLENDİRİLİYOR...';
+
+            try {
+                const result = await geminiCall(
+                    `Say cheerfully: ${lastSummary}`,
+                    "",
+                    {
+                        model: "gemini-2.5-flash-preview-tts",
+                        extraBody: {
+                            generationConfig: {
+                                responseModalities: ["AUDIO"],
+                                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+                            }
+                        }
+                    }
+                );
+
+                const pcmData = result.candidates[0].content.parts[0].inlineData.data;
+                const audioBlob = pcmToWav(pcmData, 24000); 
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+                audio.onended = () => {
+                    ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ✨ DİNLE';
+                };
+            } catch (e) {
+                console.error(e);
+                ttsBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> HATA';
+            }
+        }
+
+        function pcmToWav(base64Pcm, sampleRate) {
+            const pcmBuffer = Uint8Array.from(atob(base64Pcm), c => c.charCodeAt(0)).buffer;
+            const wavHeader = new ArrayBuffer(44);
+            const view = new DataView(wavHeader);
+            
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+            };
+
+            writeString(0, 'RIFF');
+            view.setUint32(4, 32 + pcmBuffer.byteLength, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, pcmBuffer.byteLength, true);
+
+            return new Blob([wavHeader, pcmBuffer], { type: 'audio/wav' });
+        }
+    </script>
+</body>
+</html>
 
