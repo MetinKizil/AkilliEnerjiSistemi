@@ -50,11 +50,11 @@ public class EnergyOptimizationService {
      */
     public OptimizationResult optimizeForBudget(double maxPowerBudget) {
         List<Device> allDevices = deviceService.getAllDevices();
-        List<Device> activeDevices = allDevices.stream()
+        List<Device> activeDevices = allDevices.parallelStream()
                 .filter(Device::isActive)
                 .collect(Collectors.toList());
 
-        double currentConsumption = activeDevices.stream()
+        double currentConsumption = activeDevices.parallelStream()
                 .mapToDouble(Device::getPowerConsumption)
                 .sum();
 

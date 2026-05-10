@@ -795,6 +795,25 @@ Yeni kullanıcıların platformu daha iyi kullanması ve test edilmesi amacıyla
 * API testi: Geri bildirim formu gönderildiğinde FeedbackController tarafından verilerin başarılı şekilde alınıp logger.info ile sunucuya basıldığı doğrulandı.
 * Kullanıcı Testi: Driver.js turunun sayfa ilk açılışından 1 saniye sonra sorunsuz devreye girdiği gözlemlendi. Mevcut localStorage kontrolü ile bu tur sadece ilk girişte gösterilecek şekilde ayarlandı.
 
+## 5. Eklenen Son Görevler ve Optimizasyonlar (Antigravity)
+
+Projenin entegrasyonu, makine öğrenimi performans iyileştirmeleri ve MQTT mesaj işleme kontrolleri başarıyla tamamlanmıştır. Yapılan geliştirmeler şu şekildedir:
+
+### 5.1. Görev 1: MQTT Broker InfluxDB Entegrasyon Kontrolü
+Sensörlerden gelen verilerin MQTT istemci kütüphanesi kullanılarak broker'a abone olunması ve InfluxDB'ye yazılması incelendi. 
+- **MqttMessageHandler.java** üzerinden gelen verilerin başarılı şekilde `SensorReading` nesnesine çevrildiği ve InfluxDB şema tasarımına uygun şekilde etiketlenerek (tag/field) kaydedildiği doğrulandı. Hata yönetimi (try-catch) ve loglama yapıları test edildi.
+
+### 5.2. Görev 2: Makine Öğrenimi Performans Artırımı ve Senaryo Testleri
+IoT sensörlerinden gelen verileri analiz eden ML algoritmalarının yavaşlamasını engellemek adına optimizasyonlar yapıldı:
+- **AnomalyDetectionService:** Batch işlemlerinde istatistiklerin (ortalama ve standart sapma) her döngü adımında yeniden hesaplanması engellendi. Metrikler tek seferde hesaplanıp önbelleğe alınarak `detectAnomaly` hızı milisaniyeler seviyesine düşürüldü.
+- **EnergyOptimizationService:** Cihaz listesi tarama, filtreleme ve optimizasyon algoritmalarında `parallelStream()` yapısına geçilerek büyük hacimli verilerde darboğaz yaşanması önlendi.
+- **MachineLearningPerformanceTest:** Sistemin yük altında stabilitesini ölçmek için 3 farklı senaryo oluşturuldu: Normal Senaryo (1.000 veri), Stres Senaryosu (100.000 veri) ve Kesinlik/Accuracy Senaryosu.
+
+### 5.3. Görev 3: Sistem Entegrasyonu ve Son Testler
+Modüller arası entegrasyon doğrulandı ve sistem genelinde hata tespitine yönelik son testler çalıştırıldı.
+- `mvn clean test` ile tüm birim ve performans testleri doğrulanarak Spring Context, Controller, Repository ve ML servisleri başarılı bir şekilde "BUILD SUCCESS" aşamasından geçti.
+- Uyumluluk sorunlarını gidermek için geçici olarak JDK 17 hedeflemesi yapıldı ve build hataları çözüldü.
+
 
 
 

@@ -66,9 +66,17 @@ public class AnomalyDetectionService {
                 statistics.addValue(reading.getValue());
             }
 
+            if (statistics.getN() < 10) {
+                return;
+            }
+            
+            // Ortalama ve standart sapmayi sadece bir kez hesaplayarak performansi artir (Batch Optimization)
+            double mean = statistics.getMean();
+            double stdDev = statistics.getStandardDeviation();
+
             // Her veri noktasini kontrol et
             for (SensorReading reading : recentData) {
-                AnomalyResult result = detectAnomaly(reading.getValue());
+                AnomalyResult result = detectAnomaly(reading.getValue(), mean, stdDev);
                 if (result.isAnomaly) {
                     String msg = String.format(
                             "ANOMALI TESPIT EDILDI: Cihaz %s, Deger: %.1f W, Z-Score: %.2f, Beklenen aralik: %.1f - %.1f W",
@@ -102,6 +110,13 @@ public class AnomalyDetectionService {
         double mean = statistics.getMean();
         double stdDev = statistics.getStandardDeviation();
 
+        return detectAnomaly(value, mean, stdDev);
+    }
+
+    /**
+     * Önceden hesaplanmış mean ve stdDev kullanarak yüksek performanslı anomali tespiti.
+     */
+    public AnomalyResult detectAnomaly(double value, double mean, double stdDev) {
         if (stdDev == 0) {
             return new AnomalyResult(false, 0, mean, mean);
         }
@@ -142,8 +157,14 @@ public class AnomalyDetectionService {
      */
     public List<Integer> batchDetect(double[] values) {
         List<Integer> anomalyIndices = new ArrayList<>();
+        if (statistics.getN() < 10) return anomalyIndices;
+        
+        // Batch optimizasyonu: Mean ve StdDev 1 kez hesaplanır
+        double mean = statistics.getMean();
+        double stdDev = statistics.getStandardDeviation();
+        
         for (int i = 0; i < values.length; i++) {
-            AnomalyResult result = detectAnomaly(values[i]);
+            AnomalyResult result = detectAnomaly(values[i], mean, stdDev);
             if (result.isAnomaly) {
                 anomalyIndices.add(i);
             }
