@@ -9,7 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
 </head>
 <body class="dashboard-page">
     <!-- NAVBAR -->
@@ -21,6 +23,9 @@
             </div>
         </div>
         <div class="nav-right">
+            <button class="icon-btn theme-btn" id="themeToggleBtn" title="Temayı Değiştir">
+                <i class="fas fa-moon"></i>
+            </button>
             <div class="nav-status" id="connectionStatus">
                 <span class="status-dot online"></span>
                 <span>Bagli</span>
@@ -188,6 +193,41 @@
 
     <!-- TOAST NOTIFICATION -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- FEEDBACK FLOATING BUTTON -->
+    <button class="feedback-floating-btn" id="btnOpenFeedback" title="Geri Bildirim Ver">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+
+    <!-- FEEDBACK MODAL -->
+    <div class="modal-overlay" id="feedbackModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-star"></i> Geri Bildirim Ver</h2>
+                <button class="close-modal-btn" id="btnCloseFeedback"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label>Puanınız</label>
+                        <div class="star-rating" id="starRating">
+                            <i class="far fa-star" data-value="1"></i>
+                            <i class="far fa-star" data-value="2"></i>
+                            <i class="far fa-star" data-value="3"></i>
+                            <i class="far fa-star" data-value="4"></i>
+                            <i class="far fa-star" data-value="5"></i>
+                        </div>
+                        <input type="hidden" id="feedbackRating" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Yorumunuz</label>
+                        <textarea id="feedbackComment" rows="4" placeholder="Sistem hakkındaki düşüncelerinizi veya karşılaştığınız sorunları yazın..." required></textarea>
+                    </div>
+                    <button type="submit" class="submit-feedback-btn">Gönder</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="/js/auth.js"></script>
     <script src="/js/app.js"></script>

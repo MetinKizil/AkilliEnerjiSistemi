@@ -23,6 +23,11 @@ const App = {
         this.setupEventListeners();
         this.loadAllData();
         this.startAutoRefresh();
+        
+        // Yeni eklenen moduller
+        this.setupTheme();
+        this.setupFeedbackSystem();
+        setTimeout(() => this.startAppTour(), 1000); // 1 saniye sonra tur baslasin
     },
 
     /* ==========================================
@@ -658,5 +663,186 @@ const App = {
                 setTimeout(() => toast.remove(), 300);
             }
         }, 4000);
+    },
+
+    /* ==========================================
+       TEMA SISTEMI (DARK / LIGHT MODE)
+       ========================================== */
+    setupTheme() {
+        const themeBtn = document.getElementById('themeToggleBtn');
+        if (!themeBtn) return;
+
+        // Kaydedilmis temayi kontrol et
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            themeBtn.innerHTML = newTheme === 'dark' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+            this.showToast('info', newTheme === 'dark' ? 'Karanlık moda geçildi' : 'Aydınlık moda geçildi');
+        });
+    },
+
+    /* ==========================================
+       GERI BILDIRIM SISTEMI (FEEDBACK)
+       ========================================== */
+    setupFeedbackSystem() {
+        const btnOpen = document.getElementById('btnOpenFeedback');
+        const btnClose = document.getElementById('btnCloseFeedback');
+        const modal = document.getElementById('feedbackModal');
+        const form = document.getElementById('feedbackForm');
+        const stars = document.querySelectorAll('.star-rating i');
+        const ratingInput = document.getElementById('feedbackRating');
+
+        if (!btnOpen || !modal) return;
+
+        // Modali ac
+        btnOpen.addEventListener('click', () => {
+            const startTime = performance.now();
+            modal.style.display = 'flex';
+            // Etkilesim analitigi
+            console.log(`Geri bildirim butonu tiklandi. Sure: ${startTime}ms`);
+        });
+
+        // Modali kapat
+        btnClose.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // Disariya tiklayinca kapat
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+
+        // Yildiz oylama
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                const value = star.getAttribute('data-value');
+                ratingInput.value = value;
+                
+                stars.forEach(s => {
+                    s.classList.remove('fas', 'active');
+                    s.classList.add('far');
+                    if (s.getAttribute('data-value') <= value) {
+                        s.classList.remove('far');
+                        s.classList.add('fas', 'active');
+                    }
+                });
+            });
+        });
+
+        // Form Gonderimi
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (ratingInput.value === '0') {
+                    this.showToast('warning', 'Lütfen bir yıldız puanı verin');
+                    return;
+                }
+
+                const comment = document.getElementById('feedbackComment').value;
+                const feedbackData = {
+                    username: Auth.getUsername() || 'Anonim',
+                    rating: parseInt(ratingInput.value),
+                    message: comment
+                };
+
+                try {
+                    const response = await Auth.apiRequest('/api/feedback', {
+                        method: 'POST',
+                        body: JSON.stringify(feedbackData)
+                    });
+
+                    if (response && response.ok) {
+                        this.showToast('success', 'Geri bildiriminiz başarıyla gönderildi, teşekkürler!');
+                        modal.style.display = 'none';
+                        form.reset();
+                        // Yildizlari sifirla
+                        stars.forEach(s => {
+                            s.classList.remove('fas', 'active');
+                            s.classList.add('far');
+                        });
+                        ratingInput.value = '0';
+                    } else {
+                        this.showToast('error', 'Geri bildirim gönderilemedi.');
+                    }
+                } catch (err) {
+                    // Backend henuz yoksa (local test icin konsola basiyoruz)
+                    console.log('Geri Bildirim Formu Gonderildi:', feedbackData);
+                    this.showToast('success', 'Geri bildirim test modunda alındı!');
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    },
+
+    /* ==========================================
+       UYGULAMA TURU (USABILITY TESTING)
+       ========================================== */
+    startAppTour() {
+        // Tur sadece bir kez gosterilmeli (localStorage'da tutuyoruz)
+        const hasSeenTour = localStorage.getItem('hasSeenTour');
+        if (hasSeenTour === 'true' || typeof driver === 'undefined') return;
+
+        const driverObj = driver({
+            showProgress: true,
+            animate: true,
+            nextBtnText: 'İleri',
+            prevBtnText: 'Geri',
+            doneBtnText: 'Bitir',
+            steps: [
+                {
+                    element: '#kpiSection',
+                    popover: {
+                        title: 'Hoş Geldiniz!',
+                        description: 'Akıllı Enerji Yönetim Sistemi dashboarduna hoş geldiniz. Bu kartlar sistemin anlık özetini gösterir.',
+                        side: "bottom",
+                        align: 'start'
+                    }
+                },
+                {
+                    element: '.chart-section',
+                    popover: {
+                        title: 'Enerji Geçmişi',
+                        description: 'Üretim ve tüketim oranlarını zamana bağlı olarak bu grafik üzerinden inceleyebilirsiniz. Üstteki saat butonlarıyla aralığı değiştirebilirsiniz.',
+                        side: "top",
+                        align: 'center'
+                    }
+                },
+                {
+                    element: '.devices-card',
+                    popover: {
+                        title: 'Cihaz Yönetimi',
+                        description: 'Bağlı cihazlarınızı buradan görebilir, uzaktan açıp kapatabilirsiniz.',
+                        side: "right",
+                        align: 'start'
+                    }
+                },
+                {
+                    element: '#btnOpenFeedback',
+                    popover: {
+                        title: 'Geri Bildirim',
+                        description: 'Sistem hakkında herhangi bir öneriniz veya sorununuz olursa bu buton ile bize iletebilirsiniz.',
+                        side: "left",
+                        align: 'end'
+                    }
+                }
+            ],
+            onDestroyed: () => {
+                localStorage.setItem('hasSeenTour', 'true');
+                this.showToast('info', 'Turu tamamladınız. Keyifli kullanımlar!');
+            }
+        });
+
+        driverObj.drive();
     }
 };
