@@ -795,7 +795,7 @@ Yeni kullanıcıların platformu daha iyi kullanması ve test edilmesi amacıyla
 * API testi: Geri bildirim formu gönderildiğinde FeedbackController tarafından verilerin başarılı şekilde alınıp logger.info ile sunucuya basıldığı doğrulandı.
 * Kullanıcı Testi: Driver.js turunun sayfa ilk açılışından 1 saniye sonra sorunsuz devreye girdiği gözlemlendi. Mevcut localStorage kontrolü ile bu tur sadece ilk girişte gösterilecek şekilde ayarlandı.
 
-## 5. Eklenen Son Görevler ve Optimizasyonlar (Antigravity)
+## 5. Eklenen Son Görevler ve Optimizasyonlar 
 
 Projenin entegrasyonu, makine öğrenimi performans iyileştirmeleri ve MQTT mesaj işleme kontrolleri başarıyla tamamlanmıştır. Yapılan geliştirmeler şu şekildedir:
 
