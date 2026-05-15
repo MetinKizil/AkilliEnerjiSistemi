@@ -817,3 +817,61 @@ Modüller arası entegrasyon doğrulandı ve sistem genelinde hata tespitine yö
 
 
 
+# Kullanıcı Arayüzü (UI) Geliştirme ve Kullanılabilirlik Testleri
+
+
+
+## 1. Projenin Genel Değerlendirmesi
+Proje, temel bir enerji izleme konseptinden çıkarak büyük veri (Big Data), nesnelerin interneti (IoT) ve makine öğrenmesi (Machine Learning) entegrasyonlarını başarıyla barındıran katmanlı bir (N-Tier) sistem haline gelmiştir.
+
+TIP
+Başarı Kriteri: Sistem yük testlerinde (Locust), saniyede 1000'den fazla I/O (girdi/çıktı) işlemini gecikmesiz olarak (Latency < 500ms) başarıyla gerçekleştirmiş ve gerçek zamanlı veri akışında (MQTT) sıfır veri kaybı (%0 Loss) hedefi yakalanmıştır.
+
+* Mimari Başarılar:
+    * Spring Boot tabanlı mikroservis mantığıyla geliştirilen arka uç, InfluxDB (Zaman Serisi Veritabanı) ile harika bir uyum içinde çalıştı.
+    * MQTT Broker (Eclipse Mosquitto) entegrasyonu, HTTP REST isteklerinden çok daha hafif ve gerçek zamanlı bir iletişim sağladı.
+* Yapay Zeka & Tahminleme: Doğrusal Regresyon ve XGBoost modelleri test edildikten sonra sistem mimarisi olarak %96 doğruluk (R²) oranı sunan LSTM (Derin Öğrenme) algoritmasına geçilmesi, sistemin gelecekteki enerji piklerini çok daha doğru tahmin etmesini sağladı.
+* Kullanıcı Arayüzü & Geri Bildirim: Projenin son aşamalarında sisteme dahil edilen dinamik Kullanıcı Arayüzü (Koyu/Açık Tema), gerçek zamanlı Dashboard'lar ve "Kullanıcı Geri Bildirim/Test Modülü", son kullanıcının sistemle kurduğu etkileşimi en üst düzeye çıkardı.
+
+
+
+# 2. Öğrenilen Dersler
+Geliştirme sürecinde teknik ve mimari açılardan birçok kritik ders çıkarılmıştır:
+
+WARNING
+Bağımlılık (Dependency) Yönetimi: Projenin tüm veritabanı (InfluxDB) ve haberleşme (Mosquitto) altyapısı Docker üzerine inşa edilmiştir. Docker kurulu olmayan lokal ortamlarda uygulamanın MessageDispatchingException gibi hatalar fırlatması, servis bağımlılıklarının daha esnek kurgulanması gerektiğini göstermiştir.
+
+* Zaman Serisi Veritabanlarının (TSDB) Gücü: İlişkisel veritabanları (PostgreSQL) IoT verilerini depolamak için yetersiz kalırken, InfluxDB'nin kullanılması disk I/O maliyetlerini büyük ölçüde düşürdü ve zaman bazlı sorguları milisaniyelere indirdi.
+* Kardinalite (Cardinality) Kontrolü: Sensör etiketlerinin (tag) dikkatsiz tasarımı veritabanı performansını doğrudan etkilemektedir. Veritabanı şişmesini (database bloat) önlemek için etiket tasarımlarının en baştan dikkatle yapılması gerektiği görülmüştür.
+* Asenkron İletişim Şarttır: Cihazların anlık tüketim verilerini REST API üzerinden HTTP POST istekleriyle göndermesi sistemi hızlıca bloke edebilir. MQTT + WebSocket gibi asenkron/yayın tabanlı teknolojilerin IoT sistemlerinde bir "tercih" değil, "zorunluluk" olduğu anlaşılmıştır.
+* UX / Kullanıcı Deneyimi: Sadece iyi bir altyapı yetmez; kullanıcılara "Geri Bildirim" verebilecekleri araçlar ve açık/koyu tema gibi rahatlatıcı arayüz seçenekleri sunmak, sistemin benimsenmesini hızlandırmıştır.
+
+
+
+# 3. Gelecekteki Projeler İçin İyileştirme Önerileri
+Mevcut projeden elde edilen tecrübeler ışığında, gelecekteki benzer veya daha büyük ölçekli mimariler için aşağıdaki teknolojik ve operasyonel iyileştirmeler önerilmektedir:
+
+## Altyapı ve Ölçeklenebilirlik (DevOps)
+
+* Kubernetes (K8s) Geçişi: docker-compose kullanımı geliştirme ortamı (Dev) için harika olsa da, Production ortamı için otomatik ölçeklenebilir (Auto-scaling) ve kendi kendini onarabilen (Self-healing) bir Kubernetes mimarisine geçilmesi.
+* CI/CD Süreçlerinin Otomatize Edilmesi: GitHub Actions veya Jenkins ile her commit sonrasında sistemin otomatik olarak Build alması, Locust performans testlerini koşması ve InfluxDB/MQTT bağlantılarını doğrulaması.
+
+
+## Kod ve Mimari Esneklik
+
+* Graceful Degradation (Hatalı İdare): Dış servisler (Örn: MQTT Broker) kapalı olduğunda ana uygulamanın çökmesi yerine; sistemin kendini Offline Mode'a alması ve verileri lokal bir cache (Örn: Redis/H2) üzerinde biriktirerek bağlantı geldiğinde topluca göndermesi kurgulanmalıdır.
+* CQRS ve Event-Sourcing: Sensör veri yazma işlemleri ile arayüzün veri okuma işlemleri (Command and Query) birbirinden ayrıştırılarak, veritabanı seviyesindeki potansiyel darboğazlar önlenebilir.
+
+
+## Güvenlik İyileştirmeleri
+
+* Dinamik Token ve mTLS (Mutual TLS): Sensörlerin MQTT broker ile haberleşmesinde tek bir şifre kullanmak yerine, her cihaza özel X.509 sertifikaları ile çift yönlü şifreleme (mTLS) kullanılarak ağ sızıntılarının (sniffing) tamamen önüne geçilmelidir.
+* JWT Entegrasyonu: Performans testlerinde fark edilen güvenlik kısıtlamalarını (401/403 Hataları) aşmak için, yük testi araçlarına (Locust vb.) ve uç cihazlara dinamik Bearer Token üretecek güvenli bir kimlik doğrulama havuzu oluşturulmalıdır.
+
+
+
+
+
+
+
+
